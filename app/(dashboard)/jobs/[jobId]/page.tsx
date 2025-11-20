@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Loader2, Download, FileText, CheckCircle2, XCircle, Clock, Activity } from 'lucide-react'
 
 type JobStatus = 'queued' | 'processing' | 'completed' | 'failed'
 
@@ -80,10 +81,10 @@ export default function JobStatusPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0f0a1e] flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#8b5cf6] mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading job status...</p>
+          <Loader2 className="h-16 w-16 animate-spin text-purple-600 mx-auto mb-4" />
+          <p className="text-gray-600 text-lg">Loading job status...</p>
         </div>
       </div>
     )
@@ -91,14 +92,16 @@ export default function JobStatusPage() {
 
   if (error || !job) {
     return (
-      <div className="min-h-screen bg-[#0f0a1e] flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-4">❌</div>
-          <h1 className="text-2xl font-bold text-gray-100 mb-2">Job Not Found</h1>
-          <p className="text-gray-400 mb-6">{error || 'The requested job could not be found.'}</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-gray-200 p-8 text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <XCircle className="w-8 h-8 text-red-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Job Not Found</h1>
+          <p className="text-gray-600 mb-6">{error || 'The requested job could not be found.'}</p>
           <Link
             href="/dashboard"
-            className="px-6 py-3 bg-[#7c3aed] text-white rounded-lg font-semibold hover:bg-[#6d28d9] transition"
+            className="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition"
           >
             Back to Dashboard
           </Link>
@@ -110,26 +113,26 @@ export default function JobStatusPage() {
   const getStatusIcon = (status: JobStatus) => {
     switch (status) {
       case 'queued':
-        return '⏳'
+        return <Clock className="w-8 h-8 text-yellow-600" />
       case 'processing':
-        return '⚙️'
+        return <Activity className="w-8 h-8 text-blue-600 animate-pulse" />
       case 'completed':
-        return '✅'
+        return <CheckCircle2 className="w-8 h-8 text-green-600" />
       case 'failed':
-        return '❌'
+        return <XCircle className="w-8 h-8 text-red-600" />
     }
   }
 
   const getStatusColor = (status: JobStatus) => {
     switch (status) {
       case 'queued':
-        return 'text-yellow-400'
+        return 'bg-yellow-100 text-yellow-700 border-yellow-200'
       case 'processing':
-        return 'text-blue-400'
+        return 'bg-blue-100 text-blue-700 border-blue-200'
       case 'completed':
-        return 'text-green-400'
+        return 'bg-green-100 text-green-700 border-green-200'
       case 'failed':
-        return 'text-red-400'
+        return 'bg-red-100 text-red-700 border-red-200'
     }
   }
 
@@ -148,23 +151,25 @@ export default function JobStatusPage() {
       image_convert: 'Image Convert',
       image_optimize: 'Image Optimize',
     }
-    return labels[type] || type
+    return labels[type] || type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
   }
 
   const progress = job.progress || 0
 
   return (
-    <div className="min-h-screen bg-[#0f0a1e] text-gray-100">
+    <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-[rgba(26,19,50,0.95)] backdrop-blur-md border-b border-[#312e81] z-50">
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-extrabold text-[#8b5cf6]">
-              DocOpsCloud
+            <Link href="/" className="text-2xl font-extrabold">
+              <span className="text-gray-900">Doc</span>
+              <span className="text-purple-600">Ops</span>
+              <span className="text-gray-900">Cloud</span>
             </Link>
             <Link
               href="/dashboard"
-              className="px-5 py-2.5 border border-[#312e81] rounded-lg text-gray-300 hover:bg-[#1e1b4b] transition font-semibold"
+              className="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition font-semibold"
             >
               Dashboard
             </Link>
@@ -173,68 +178,70 @@ export default function JobStatusPage() {
       </nav>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto pt-28 pb-16 px-6">
-        {/* Header */}
-        <div className="mb-10">
+      <div className="max-w-4xl mx-auto pt-8 pb-16 px-6">
+        {/* Breadcrumb */}
+        <div className="mb-8">
           <Link
             href="/dashboard"
-            className="text-[#8b5cf6] hover:text-[#a78bfa] transition font-semibold inline-flex items-center gap-2 mb-6"
+            className="text-purple-600 hover:text-purple-700 transition font-semibold inline-flex items-center gap-2 mb-4"
           >
             <span>←</span>
             Back to Dashboard
           </Link>
-          <h1 className="text-4xl font-black mb-2">Job Status</h1>
-          <p className="text-gray-400">Job ID: {job.id}</p>
+          <h1 className="text-4xl font-extrabold text-gray-900 mb-2">Job Status</h1>
+          <p className="text-gray-600">Job ID: <span className="font-mono text-sm">{job.id}</span></p>
         </div>
 
         {/* Status Card */}
-        <div className="bg-[#1a1332] border border-[#312e81] rounded-2xl p-8 mb-6">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <span className="text-4xl">{getStatusIcon(job.status)}</span>
-                <h2 className="text-3xl font-bold">{getJobTypeLabel(job.type)}</h2>
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-6">
+          <div className="flex items-start justify-between mb-8">
+            <div className="flex-1">
+              <div className="flex items-center gap-4 mb-3">
+                {getStatusIcon(job.status)}
+                <h2 className="text-3xl font-bold text-gray-900">{getJobTypeLabel(job.type)}</h2>
               </div>
-              <p className={`text-lg font-semibold ${getStatusColor(job.status)} capitalize`}>
-                {job.status}
-              </p>
+              <div className={`inline-flex items-center px-3 py-1.5 rounded-full border font-semibold text-sm ${getStatusColor(job.status)}`}>
+                {job.status.charAt(0).toUpperCase() + job.status.slice(1)}
+              </div>
             </div>
           </div>
 
           {/* Progress Bar */}
           {(job.status === 'queued' || job.status === 'processing') && (
             <div className="mb-8">
-              <div className="flex justify-between text-sm text-gray-400 mb-2">
-                <span>Progress</span>
-                <span>{progress}%</span>
+              <div className="flex justify-between text-sm text-gray-600 mb-2">
+                <span className="font-medium">Progress</span>
+                <span className="font-semibold">{progress}%</span>
               </div>
-              <div className="w-full bg-[#1e1b4b] rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-[#7c3aed] to-[#6d28d9] h-full transition-all duration-500 rounded-full"
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 h-full transition-all duration-500 rounded-full relative"
                   style={{ width: `${progress}%` }}
                 >
                   {job.status === 'processing' && (
-                    <div className="h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
                   )}
                 </div>
               </div>
+              <p className="text-sm text-gray-500 mt-2">
+                {job.status === 'queued' && 'Your job is in the queue and will start processing soon...'}
+                {job.status === 'processing' && 'Processing your file. This may take a few moments...'}
+              </p>
             </div>
           )}
 
           {/* Input File */}
           {job.inputFile && (
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-400 mb-3">Input File</h3>
-              <div className="bg-[#1e1b4b] border border-[#312e81] rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">📄</span>
-                    <div>
-                      <p className="font-semibold text-gray-100">{job.inputFile.name}</p>
-                      <p className="text-sm text-gray-400">
-                        {(job.inputFile.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
-                    </div>
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Input File</h3>
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <div className="flex items-center gap-3">
+                  <FileText className="w-6 h-6 text-gray-500" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 truncate">{job.inputFile.name}</p>
+                    <p className="text-sm text-gray-600">
+                      {(job.inputFile.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
                   </div>
                 </div>
               </div>
@@ -244,14 +251,16 @@ export default function JobStatusPage() {
           {/* Output File */}
           {job.status === 'completed' && job.outputFile && (
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-400 mb-3">Output File</h3>
-              <div className="bg-gradient-to-br from-[#1e1b4b] to-[#1a1332] border border-[#7c3aed] rounded-lg p-4 shadow-[0_0_20px_rgba(139,92,246,0.2)]">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 flex-1">
-                    <span className="text-2xl">📥</span>
-                    <div>
-                      <p className="font-semibold text-gray-100">{job.outputFile.name}</p>
-                      <p className="text-sm text-gray-400">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Output File</h3>
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-5">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Download className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 truncate">{job.outputFile.name}</p>
+                      <p className="text-sm text-gray-600">
                         {(job.outputFile.size / 1024 / 1024).toFixed(2)} MB
                       </p>
                     </div>
@@ -259,8 +268,9 @@ export default function JobStatusPage() {
                   <a
                     href={job.outputFile.downloadUrl}
                     download
-                    className="px-6 py-3 bg-gradient-to-r from-[#7c3aed] to-[#6d28d9] text-white rounded-lg font-semibold hover:from-[#6d28d9] hover:to-[#5b21b6] transition shadow-[0_0_20px_rgba(139,92,246,0.3)]"
+                    className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition shadow-sm flex items-center gap-2 flex-shrink-0"
                   >
+                    <Download className="w-4 h-4" />
                     Download
                   </a>
                 </div>
@@ -270,52 +280,63 @@ export default function JobStatusPage() {
 
           {/* Error */}
           {job.status === 'failed' && job.error && (
-            <div className="bg-red-900/20 border border-red-500/50 text-red-300 px-6 py-4 rounded-lg mb-6">
-              <h3 className="font-semibold mb-2">Error</h3>
-              <p className="text-sm">{job.error}</p>
-            </div>
-          )}
-
-          {/* Metadata */}
-          {job.metadata && Object.keys(job.metadata).length > 0 && (
-            <div>
-              <h3 className="text-sm font-semibold text-gray-400 mb-3">Details</h3>
-              <div className="bg-[#1e1b4b] border border-[#312e81] rounded-lg p-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-400">Created:</span>
-                    <span className="ml-2 text-gray-100">
-                      {new Date(job.createdAt).toLocaleString()}
-                    </span>
-                  </div>
-                  {job.startedAt && (
-                    <div>
-                      <span className="text-gray-400">Started:</span>
-                      <span className="ml-2 text-gray-100">
-                        {new Date(job.startedAt).toLocaleString()}
-                      </span>
-                    </div>
-                  )}
-                  {job.completedAt && (
-                    <div>
-                      <span className="text-gray-400">Completed:</span>
-                      <span className="ml-2 text-gray-100">
-                        {new Date(job.completedAt).toLocaleString()}
-                      </span>
-                    </div>
-                  )}
+            <div className="bg-red-50 border-2 border-red-200 text-red-700 px-6 py-4 rounded-xl mb-6">
+              <div className="flex items-start gap-3">
+                <XCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold mb-1">Error</h3>
+                  <p className="text-sm">{job.error}</p>
                 </div>
               </div>
             </div>
           )}
+
+          {/* Metadata */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Details</h3>
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Created:</span>
+                  <span className="text-gray-900 font-medium">
+                    {new Date(job.createdAt).toLocaleString()}
+                  </span>
+                </div>
+                {job.startedAt && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Started:</span>
+                    <span className="text-gray-900 font-medium">
+                      {new Date(job.startedAt).toLocaleString()}
+                    </span>
+                  </div>
+                )}
+                {job.completedAt && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Completed:</span>
+                    <span className="text-gray-900 font-medium">
+                      {new Date(job.completedAt).toLocaleString()}
+                    </span>
+                  </div>
+                )}
+                {job.completedAt && job.startedAt && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Duration:</span>
+                    <span className="text-gray-900 font-medium">
+                      {((new Date(job.completedAt).getTime() - new Date(job.startedAt).getTime()) / 1000).toFixed(1)}s
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Actions */}
         <div className="flex gap-4">
           {job.status === 'completed' && (
             <Link
-              href="/tools"
-              className="flex-1 px-6 py-4 border-2 border-[#7c3aed] text-[#8b5cf6] rounded-lg font-bold text-center hover:bg-[#1e1b4b] transition"
+              href="/dashboard"
+              className="flex-1 px-6 py-4 border-2 border-purple-600 text-purple-600 rounded-xl font-bold text-center hover:bg-purple-50 transition"
             >
               Process Another File
             </Link>
@@ -323,7 +344,7 @@ export default function JobStatusPage() {
           {job.status === 'failed' && (
             <button
               onClick={() => router.back()}
-              className="flex-1 px-6 py-4 bg-[#7c3aed] text-white rounded-lg font-bold hover:bg-[#6d28d9] transition"
+              className="flex-1 px-6 py-4 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition shadow-sm"
             >
               Try Again
             </button>
