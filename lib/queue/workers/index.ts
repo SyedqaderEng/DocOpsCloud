@@ -1,9 +1,13 @@
 import { PdfWorker } from './pdf-worker'
 import { WordWorker } from './word-worker'
+import { ExcelWorker } from './excel-worker'
+import { ImageWorker } from './image-worker'
 
 // Initialize workers
 let pdfWorker: PdfWorker | null = null
 let wordWorker: WordWorker | null = null
+let excelWorker: ExcelWorker | null = null
+let imageWorker: ImageWorker | null = null
 
 /**
  * Start all workers
@@ -19,7 +23,13 @@ export async function startWorkers(): Promise<void> {
   wordWorker = new WordWorker()
   console.log('✓ Word worker started')
 
-  // TODO: Add more workers for Excel, Image processing
+  // Start Excel worker
+  excelWorker = new ExcelWorker()
+  console.log('✓ Excel worker started')
+
+  // Start Image worker
+  imageWorker = new ImageWorker()
+  console.log('✓ Image worker started')
 
   console.log('All workers started successfully')
 }
@@ -40,7 +50,15 @@ export async function stopWorkers(): Promise<void> {
     wordWorker = null
   }
 
-  // TODO: Stop Excel and Image workers
+  if (excelWorker) {
+    await excelWorker.close()
+    excelWorker = null
+  }
+
+  if (imageWorker) {
+    await imageWorker.close()
+    imageWorker = null
+  }
 
   console.log('All workers stopped')
 }
@@ -52,7 +70,8 @@ export function getWorkersHealth(): Record<string, boolean> {
   return {
     pdf: pdfWorker !== null,
     word: wordWorker !== null,
-    // TODO: Add Excel and Image worker statuses
+    excel: excelWorker !== null,
+    image: imageWorker !== null,
   }
 }
 
