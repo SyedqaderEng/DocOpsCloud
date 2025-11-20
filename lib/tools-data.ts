@@ -166,3 +166,7 @@ export const getAllTools = () => {
     category.tools.map(tool => ({ ...tool, category: category.name }))
   )
 }
+
+export const getToolById = (id: string) => {
+  return getAllTools().find((tool) => tool.id === id)
+}
