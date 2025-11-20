@@ -1,6 +1,37 @@
 import { Job } from 'bullmq'
 import { SubscriptionTier } from '@prisma/client'
 
+// Job type enumeration
+export enum JobType {
+  // PDF operations
+  PDF_MERGE = 'PDF_MERGE',
+  PDF_SPLIT = 'PDF_SPLIT',
+  PDF_COMPRESS = 'PDF_COMPRESS',
+  PDF_WATERMARK = 'PDF_WATERMARK',
+  PDF_ROTATE = 'PDF_ROTATE',
+  PDF_EXTRACT_PAGES = 'PDF_EXTRACT_PAGES',
+  PDF_PAGE_NUMBERS = 'PDF_PAGE_NUMBERS',
+  PDF_CONVERT = 'PDF_CONVERT',
+  PDF_OCR = 'PDF_OCR',
+
+  // Word operations
+  WORD_TO_PDF = 'WORD_TO_PDF',
+  WORD_TO_HTML = 'WORD_TO_HTML',
+  WORD_TO_MARKDOWN = 'WORD_TO_MARKDOWN',
+
+  // Excel operations
+  EXCEL_TO_CSV = 'EXCEL_TO_CSV',
+  CSV_TO_EXCEL = 'CSV_TO_EXCEL',
+
+  // Image operations
+  IMAGE_RESIZE = 'IMAGE_RESIZE',
+  IMAGE_CONVERT = 'IMAGE_CONVERT',
+  IMAGE_COMPRESS = 'IMAGE_COMPRESS',
+}
+
+// Job priority levels (lower number = higher priority)
+export type JobPriority = 1 | 5 | 10 | 15
+
 // Base job data interface
 export interface BaseJobData {
   jobId: string
@@ -31,6 +62,45 @@ export interface PdfCompressJobData extends BaseJobData {
   operationType: 'pdf_compress'
   operationParams: {
     quality: 'low' | 'medium' | 'high'
+  }
+}
+
+export interface PdfWatermarkJobData extends BaseJobData {
+  operationType: 'pdf_watermark'
+  operationParams: {
+    text: string
+    opacity?: number
+    fontSize?: number
+    color?: { r: number; g: number; b: number }
+    rotation?: number
+    position?: 'center' | 'diagonal'
+  }
+}
+
+export interface PdfRotateJobData extends BaseJobData {
+  operationType: 'pdf_rotate'
+  operationParams: {
+    pageNumbers: number[]
+    rotation: 90 | 180 | 270
+  }
+}
+
+export interface PdfExtractPagesJobData extends BaseJobData {
+  operationType: 'pdf_extract_pages'
+  operationParams: {
+    pageNumbers: number[]
+  }
+}
+
+export interface PdfPageNumbersJobData extends BaseJobData {
+  operationType: 'pdf_page_numbers'
+  operationParams: {
+    format?: 'number' | 'pageOfTotal'
+    position?: 'bottom-center' | 'bottom-left' | 'bottom-right' | 'top-center'
+    fontSize?: number
+    startPage?: number
+    prefix?: string
+    suffix?: string
   }
 }
 
@@ -67,6 +137,10 @@ export type ProcessingJobData =
   | PdfMergeJobData
   | PdfSplitJobData
   | PdfCompressJobData
+  | PdfWatermarkJobData
+  | PdfRotateJobData
+  | PdfExtractPagesJobData
+  | PdfPageNumbersJobData
   | WordConvertJobData
   | ExcelConvertJobData
   | ImageResizeJobData
@@ -95,6 +169,10 @@ export const OPERATION_TIMEOUTS: Record<string, number> = {
   pdf_merge: 10 * 60 * 1000,
   pdf_split: 5 * 60 * 1000,
   pdf_compress: 10 * 60 * 1000,
+  pdf_watermark: 5 * 60 * 1000,
+  pdf_rotate: 5 * 60 * 1000,
+  pdf_extract_pages: 5 * 60 * 1000,
+  pdf_page_numbers: 5 * 60 * 1000,
   pdf_convert: 10 * 60 * 1000,
   pdf_ocr: 15 * 60 * 1000, // OCR takes longer
 
