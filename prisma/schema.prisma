@@ -1,0 +1,311 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== USER MANAGEMENT ====================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password_hash String?
+  email_verified DateTime?
+  avatar_url    String?
+
+  // Subscription details
+  subscription_tier    SubscriptionTier   @default(FREE)
+  subscription_status  SubscriptionStatus @default(INACTIVE)
+  subscription_expires_at DateTime?
+
+  // Stripe integration
+  stripe_customer_id String? @unique
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  accounts              Account[]
+  sessions              Session[]
+  files                 File[]
+  processing_jobs       ProcessingJob[]
+  subscription          Subscription?
+  usage_logs            UsageLog[]
+  api_keys              ApiKey[]
+  email_verification_tokens EmailVerificationToken[]
+  password_reset_tokens     PasswordResetToken[]
+
+  @@index([email])
+  @@index([stripe_customer_id])
+  @@index([subscription_status])
+  @@map("users")
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO
+  BUSINESS
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+  EXPIRED
+}
+
+// ==================== AUTHENTICATION ====================
+
+model Account {
+  id                String  @id @default(cuid())
+  user_id           String
+  type              String
+  provider          String
+  provider_account_id String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([provider, provider_account_id])
+  @@index([user_id])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  session_token String   @unique
+  user_id      String
+  expires      DateTime
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model EmailVerificationToken {
+  id      String   @id @default(cuid())
+  user_id String
+  token   String   @unique
+  expires DateTime
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@map("email_verification_tokens")
+}
+
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  user_id String
+  token   String   @unique
+  expires DateTime
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@map("password_reset_tokens")
+}
+
+// ==================== FILE MANAGEMENT ====================
+
+model File {
+  id                String           @id @default(cuid())
+  user_id           String
+
+  // File metadata
+  original_name     String
+  stored_name       String
+  file_type         FileType
+  file_size         BigInt
+  mime_type         String
+
+  // Storage details
+  s3_url            String
+  thumbnail_url     String?
+
+  // Status tracking
+  upload_status     UploadStatus     @default(UPLOADING)
+  processing_status ProcessingStatus @default(PENDING)
+
+  // Timestamps
+  created_at DateTime @default(now())
+  expires_at DateTime
+
+  // Relations
+  user                 User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  input_jobs           ProcessingJob[] @relation("InputFile")
+  output_jobs          ProcessingJob[] @relation("OutputFile")
+
+  @@index([user_id])
+  @@index([created_at])
+  @@index([processing_status])
+  @@index([expires_at])
+  @@map("files")
+}
+
+enum FileType {
+  PDF
+  DOCX
+  XLSX
+  CSV
+  IMAGE
+  OTHER
+}
+
+enum UploadStatus {
+  UPLOADING
+  COMPLETE
+  FAILED
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETE
+  FAILED
+}
+
+// ==================== JOB PROCESSING ====================
+
+model ProcessingJob {
+  id               String           @id @default(cuid())
+  user_id          String
+  input_file_id    String
+  output_file_id   String?
+
+  // Job details
+  operation_type   String
+  operation_params Json?
+
+  // Status tracking
+  status           JobStatus        @default(QUEUED)
+  progress_percentage Int           @default(0)
+  error_message    String?
+
+  // Timestamps
+  started_at    DateTime?
+  completed_at  DateTime?
+  created_at    DateTime  @default(now())
+
+  // Relations
+  user        User  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  input_file  File  @relation("InputFile", fields: [input_file_id], references: [id])
+  output_file File? @relation("OutputFile", fields: [output_file_id], references: [id])
+
+  @@index([user_id])
+  @@index([status])
+  @@index([created_at])
+  @@map("processing_jobs")
+}
+
+enum JobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETE
+  FAILED
+  CANCELED
+}
+
+// ==================== SUBSCRIPTIONS & BILLING ====================
+
+model Subscription {
+  id                      String             @id @default(cuid())
+  user_id                 String             @unique
+
+  // Stripe details
+  stripe_subscription_id  String             @unique
+  stripe_price_id         String
+
+  // Plan details
+  plan_type               SubscriptionTier
+  status                  SubscriptionStatus
+
+  // Billing cycle
+  current_period_start    DateTime
+  current_period_end      DateTime
+  cancel_at_period_end    Boolean            @default(false)
+  canceled_at             DateTime?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([stripe_subscription_id])
+  @@map("subscriptions")
+}
+
+// ==================== USAGE TRACKING ====================
+
+model UsageLog {
+  id                   String   @id @default(cuid())
+  user_id              String
+
+  // Operation details
+  operation_type       String
+  file_size_processed  BigInt
+  processing_time_ms   Int
+  credits_used         Int      @default(1)
+
+  created_at DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([created_at])
+  @@map("usage_logs")
+}
+
+// ==================== API ACCESS ====================
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  user_id    String
+
+  // Key details
+  key_hash   String    @unique
+  name       String
+
+  // Usage tracking
+  last_used_at DateTime?
+
+  // Lifecycle
+  expires_at DateTime?
+  revoked_at DateTime?
+  created_at DateTime  @default(now())
+
+  // Relations
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([key_hash])
+  @@map("api_keys")
+}
