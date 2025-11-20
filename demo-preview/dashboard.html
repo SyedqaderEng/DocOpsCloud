@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - DocOpsCloud</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="logo">DocOpsCloud</a>
+      <ul class="nav-links">
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="index.html" class="btn btn-secondary">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Dashboard Container -->
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li>
+          <a href="dashboard.html" class="active">
+            <span class="icon">📊</span>
+            <span>Overview</span>
+          </a>
+        </li>
+        <li>
+          <a href="my-files.html">
+            <span class="icon">📁</span>
+            <span>My Files</span>
+          </a>
+        </li>
+        <li>
+          <a href="jobs.html">
+            <span class="icon">⚙️</span>
+            <span>Processing Jobs</span>
+          </a>
+        </li>
+        <li>
+          <a href="upload.html">
+            <span class="icon">⬆️</span>
+            <span>Upload File</span>
+          </a>
+        </li>
+        <li style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-primary);">
+          <a href="tools.html">
+            <span class="icon">🛠️</span>
+            <span>All Tools</span>
+          </a>
+        </li>
+        <li>
+          <a href="pdf-tools.html">
+            <span class="icon">📄</span>
+            <span>PDF Tools</span>
+          </a>
+        </li>
+        <li>
+          <a href="word-tools.html">
+            <span class="icon">📝</span>
+            <span>Word Tools</span>
+          </a>
+        </li>
+        <li>
+          <a href="excel-tools.html">
+            <span class="icon">📊</span>
+            <span>Excel Tools</span>
+          </a>
+        </li>
+        <li>
+          <a href="image-tools.html">
+            <span class="icon">🖼️</span>
+            <span>Image Tools</span>
+          </a>
+        </li>
+        <li style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-primary);">
+          <a href="profile.html">
+            <span class="icon">⚙️</span>
+            <span>Settings</span>
+          </a>
+        </li>
+        <li>
+          <a href="api-keys.html">
+            <span class="icon">🔑</span>
+            <span>API Keys</span>
+          </a>
+        </li>
+        <li>
+          <a href="billing.html">
+            <span class="icon">💳</span>
+            <span>Billing</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="dashboard-header">
+        <h1>Dashboard</h1>
+        <p style="color: var(--text-secondary);">Welcome back, John! Here's your account overview.</p>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="dashboard-stats">
+        <div class="stat-box">
+          <div class="stat-box-header">
+            <span class="stat-box-label">Total Files</span>
+            <span class="stat-box-icon">📄</span>
+          </div>
+          <div class="stat-box-value">47</div>
+          <div class="stat-box-change positive">+12% from last month</div>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-box-header">
+            <span class="stat-box-label">Processing Jobs</span>
+            <span class="stat-box-icon">⚙️</span>
+          </div>
+          <div class="stat-box-value">3</div>
+          <div class="stat-box-change">2 completed, 1 in progress</div>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-box-header">
+            <span class="stat-box-label">Operations Used</span>
+            <span class="stat-box-icon">📊</span>
+          </div>
+          <div class="stat-box-value">234</div>
+          <div class="stat-box-change">266 remaining this month</div>
+        </div>
+
+        <div class="stat-box">
+          <div class="stat-box-header">
+            <span class="stat-box-label">Storage Used</span>
+            <span class="stat-box-icon">💾</span>
+          </div>
+          <div class="stat-box-value">2.3 GB</div>
+          <div class="stat-box-change">7.7 GB available</div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Quick Actions</h2>
+        </div>
+        <div class="tools-grid">
+          <a href="upload.html" class="tool-card">
+            <div class="tool-icon">⬆️</div>
+            <h3>Upload File</h3>
+            <p>Start by uploading a document</p>
+          </a>
+          <a href="pdf-merge.html" class="tool-card">
+            <div class="tool-icon">🔗</div>
+            <h3>Merge PDFs</h3>
+            <p>Combine multiple PDF files</p>
+          </a>
+          <a href="pdf-compress.html" class="tool-card">
+            <div class="tool-icon">🗜️</div>
+            <h3>Compress PDF</h3>
+            <p>Reduce PDF file size</p>
+          </a>
+          <a href="image-optimize.html" class="tool-card">
+            <div class="tool-icon">✨</div>
+            <h3>Optimize Image</h3>
+            <p>Compress and resize images</p>
+          </a>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Recent Activity</h2>
+          <a href="jobs.html" style="color: var(--purple-500); text-decoration: none; font-weight: 600;">View all</a>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>File Name</th>
+                <th>Operation</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>📄</span>
+                    <span>document.pdf</span>
+                  </div>
+                </td>
+                <td>PDF Merge</td>
+                <td><span class="badge badge-success">Completed</span></td>
+                <td>2 hours ago</td>
+                <td>
+                  <a href="#" style="color: var(--purple-500); text-decoration: none; font-weight: 600;">Download</a>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>🖼️</span>
+                    <span>photo.jpg</span>
+                  </div>
+                </td>
+                <td>Image Compress</td>
+                <td><span class="badge badge-warning">Processing</span></td>
+                <td>5 minutes ago</td>
+                <td>
+                  <a href="job-status.html" style="color: var(--purple-500); text-decoration: none; font-weight: 600;">View</a>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>📊</span>
+                    <span>data.xlsx</span>
+                  </div>
+                </td>
+                <td>Excel to CSV</td>
+                <td><span class="badge badge-success">Completed</span></td>
+                <td>1 day ago</td>
+                <td>
+                  <a href="#" style="color: var(--purple-500); text-decoration: none; font-weight: 600;">Download</a>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>📝</span>
+                    <span>report.docx</span>
+                  </div>
+                </td>
+                <td>Word to PDF</td>
+                <td><span class="badge badge-success">Completed</span></td>
+                <td>2 days ago</td>
+                <td>
+                  <a href="#" style="color: var(--purple-500); text-decoration: none; font-weight: 600;">Download</a>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>📄</span>
+                    <span>presentation.pdf</span>
+                  </div>
+                </td>
+                <td>PDF Compress</td>
+                <td><span class="badge badge-error">Failed</span></td>
+                <td>3 days ago</td>
+                <td>
+                  <a href="#" style="color: var(--error); text-decoration: none; font-weight: 600;">Retry</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Usage Chart -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Monthly Usage</h2>
+          <select style="background: var(--bg-tertiary); border: 1px solid var(--border-primary); padding: 0.5rem; border-radius: 0.375rem; color: var(--text-primary);">
+            <option>Last 30 days</option>
+            <option>Last 90 days</option>
+            <option>This year</option>
+          </select>
+        </div>
+        <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+          <p style="margin-bottom: 1rem;">📊 Usage chart would be displayed here</p>
+          <p style="font-size: 0.875rem;">234 out of 500 operations used this month</p>
+          <div class="progress-bar" style="margin-top: 1rem;">
+            <div class="progress-fill" style="width: 47%;"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
