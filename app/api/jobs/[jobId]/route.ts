@@ -42,21 +42,40 @@ export async function GET(
       )
     }
 
+    // Transform status to lowercase for frontend
+    const status = job.status.toLowerCase() as 'queued' | 'processing' | 'complete' | 'failed' | 'canceled'
+
+    // Generate download URL for output file
+    let downloadUrl: string | undefined
+    if (job.output_file && job.status === 'COMPLETE') {
+      downloadUrl = `/api/files/${job.output_file.id}/download`
+    }
+
     return NextResponse.json({
-      success: true,
-      data: {
-        id: job.id,
-        status: job.status,
-        progress: job.progress_percentage,
-        operationType: job.operation_type,
-        operationParams: job.operation_params,
-        inputFile: job.input_file,
-        outputFile: job.output_file,
-        error: job.error_message,
-        createdAt: job.created_at,
-        startedAt: job.started_at,
-        completedAt: job.completed_at,
-      },
+      id: job.id,
+      type: job.operation_type,
+      status: status === 'complete' ? 'completed' : status, // Map COMPLETE to completed
+      progress: job.progress_percentage,
+      error: job.error_message,
+      createdAt: job.created_at,
+      startedAt: job.started_at,
+      completedAt: job.completed_at,
+      inputFile: job.input_file
+        ? {
+            id: job.input_file.id,
+            name: job.input_file.original_name,
+            size: Number(job.input_file.file_size),
+          }
+        : undefined,
+      outputFile: job.output_file
+        ? {
+            id: job.output_file.id,
+            name: job.output_file.original_name,
+            size: Number(job.output_file.file_size),
+            downloadUrl,
+          }
+        : undefined,
+      metadata: job.operation_params,
     })
   } catch (error) {
     console.error('Job status fetch error:', error)
