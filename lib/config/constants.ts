@@ -1,38 +1,41 @@
-// Refined color palette - Indigo/Blue-Purple combination
+/**
+ * GLASSMORPHISM THEME - Dark Mode + Neon Accents
+ * Modern frosted glass design with vibrant neon colors
+ */
 export const colors = {
-  // Primary brand colors
-  primary: {
-    50: '#eef2ff',
-    100: '#e0e7ff',
-    200: '#c7d2fe',
-    300: '#a5b4fc',
-    400: '#818cf8',
-    500: '#6366f1', // Main brand color
-    600: '#4f46e5',
-    700: '#4338ca',
-    800: '#3730a3',
-    900: '#312e81',
+  // Base dark colors
+  dark: {
+    base: '#0a0a0a',          // Deep black background
+    card: '#0f0f0f',          // Slightly lighter for cards
+    glass: 'rgba(255, 255, 255, 0.05)',  // Frosted glass base
+    glassFull: 'rgba(255, 255, 255, 0.1)', // Stronger glass
+    border: 'rgba(255, 255, 255, 0.1)',   // Glass border
+    borderHover: 'rgba(0, 212, 255, 0.5)', // Neon border on hover
   },
 
-  // Accent colors
-  accent: {
-    50: '#faf5ff',
-    100: '#f3e8ff',
-    200: '#e9d5ff',
-    300: '#d8b4fe',
-    400: '#c084fc',
-    500: '#a855f7',
-    600: '#9333ea',
-    700: '#7e22ce',
-    800: '#6b21a8',
-    900: '#581c87',
+  // Neon accent colors (Primary theme colors)
+  neon: {
+    cyan: '#00d4ff',          // Primary neon cyan
+    cyanDark: '#00a3cc',      // Darker cyan
+    magenta: '#ff00ff',       // Neon magenta/pink
+    lime: '#00ff88',          // Neon lime green
+    purple: '#a855f7',        // Neon purple
+    blue: '#3b82f6',          // Neon blue
   },
 
-  // Semantic colors
-  success: '#10b981',
-  warning: '#f59e0b',
-  error: '#ef4444',
-  info: '#3b82f6',
+  // Gradients
+  gradient: {
+    primary: 'linear-gradient(135deg, #00d4ff 0%, #a855f7 100%)',
+    secondary: 'linear-gradient(135deg, #ff00ff 0%, #00d4ff 100%)',
+    rainbow: 'linear-gradient(135deg, #00d4ff 0%, #a855f7 50%, #ff00ff 100%)',
+    dark: 'linear-gradient(135deg, #0a0a0a 0%, #1a0f1f 100%)',
+  },
+
+  // Semantic colors (with neon twist)
+  success: '#00ff88',
+  warning: '#ffaa00',
+  error: '#ff0055',
+  info: '#00d4ff',
 }
 
 // Usage limits by tier
@@ -66,7 +69,7 @@ export const TOOL_CATEGORIES = [
     id: 'pdf',
     name: 'PDF Tools',
     icon: '📄',
-    color: 'from-red-500 to-orange-500',
+    color: 'from-[#00d4ff] to-[#a855f7]', // Cyan to Purple gradient
     description: 'Complete PDF toolkit',
     subcategories: [
       { name: 'Convert', tools: ['pdf-to-word', 'pdf-to-excel', 'pdf-to-images', 'pdf-to-ppt'] },
@@ -80,7 +83,7 @@ export const TOOL_CATEGORIES = [
     id: 'word',
     name: 'Word Tools',
     icon: '📝',
-    color: 'from-blue-500 to-cyan-500',
+    color: 'from-[#a855f7] to-[#ff00ff]', // Purple to Magenta gradient
     description: 'Word document processing',
     subcategories: [
       { name: 'Convert', tools: ['word-to-pdf', 'word-to-html', 'word-to-markdown'] },
@@ -91,7 +94,7 @@ export const TOOL_CATEGORIES = [
     id: 'excel',
     name: 'Excel Tools',
     icon: '📊',
-    color: 'from-green-500 to-emerald-500',
+    color: 'from-[#00ff88] to-[#00d4ff]', // Lime to Cyan gradient
     description: 'Spreadsheet manipulation',
     subcategories: [
       { name: 'Convert', tools: ['excel-to-csv', 'csv-to-excel', 'excel-to-pdf'] },
@@ -102,7 +105,7 @@ export const TOOL_CATEGORIES = [
     id: 'image',
     name: 'Image Tools',
     icon: '🖼️',
-    color: 'from-purple-500 to-pink-500',
+    color: 'from-[#ff00ff] to-[#00d4ff]', // Magenta to Cyan gradient
     description: 'Image editing and conversion',
     subcategories: [
       { name: 'Convert', tools: ['image-convert', 'image-format-webp', 'image-format-avif'] },
