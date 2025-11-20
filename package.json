@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "worker": "tsx scripts/worker.ts",
+    "worker": "tsx scripts/start-workers.ts",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "format": "prettier --write .",
