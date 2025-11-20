@@ -1,5 +1,7 @@
 import { BaseProcessor } from './base-processor'
-import { PDFDocument } from 'pdf-lib'
+import { pdfCoreService } from '@/modules/pdf/services/core'
+import { pdfSecurityService } from '@/modules/pdf/services/security'
+import { pdfCompressionService } from '@/modules/pdf/services/compression'
 
 export class PdfProcessor extends BaseProcessor {
   /**
@@ -8,34 +10,20 @@ export class PdfProcessor extends BaseProcessor {
   async mergePdfs(fileIds: string[], userId: string): Promise<{ fileId: string; url: string }> {
     this.log('Starting PDF merge', { fileIds })
 
-    // Create new PDF document
-    const mergedPdf = await PDFDocument.create()
-
-    // Download and process each PDF
+    // Download all PDF files
+    const pdfBuffers: Buffer[] = []
     for (let i = 0; i < fileIds.length; i++) {
-      this.log(`Processing PDF ${i + 1} of ${fileIds.length}`)
-
+      this.log(`Downloading PDF ${i + 1} of ${fileIds.length}`)
       await this.validateInputFile(fileIds[i])
-
       const pdfBuffer = await this.downloadFile(fileIds[i])
-      const pdf = await PDFDocument.load(pdfBuffer)
-
-      // Copy pages from this PDF to merged PDF
-      const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices())
-      copiedPages.forEach((page) => mergedPdf.addPage(page))
+      pdfBuffers.push(pdfBuffer)
     }
 
-    // Save merged PDF
-    const mergedPdfBytes = await mergedPdf.save()
-    const mergedBuffer = Buffer.from(mergedPdfBytes)
+    // Merge PDFs using core service
+    const mergedBuffer = await pdfCoreService.mergePdfs(pdfBuffers)
 
     // Upload merged PDF
-    const result = await this.uploadFile(
-      userId,
-      'merged.pdf',
-      mergedBuffer,
-      'application/pdf'
-    )
+    const result = await this.uploadFile(userId, 'merged.pdf', mergedBuffer, 'application/pdf')
 
     this.log('PDF merge complete', { outputFileId: result.fileId })
 
@@ -53,54 +41,29 @@ export class PdfProcessor extends BaseProcessor {
     this.log('Starting PDF split', { fileId, pageRanges })
 
     await this.validateInputFile(fileId)
-
     const pdfBuffer = await this.downloadFile(fileId)
-    const pdf = await PDFDocument.load(pdfBuffer)
 
-    const totalPages = pdf.getPageCount()
-    const results: Array<{ fileId: string; url: string }> = []
+    // Get metadata to determine page count
+    const metadata = await pdfCoreService.getMetadata(pdfBuffer)
 
-    // If no page ranges specified, split each page into separate PDF
+    // If no ranges specified, split each page
     if (!pageRanges || pageRanges.length === 0) {
-      for (let i = 0; i < totalPages; i++) {
-        const newPdf = await PDFDocument.create()
-        const [copiedPage] = await newPdf.copyPages(pdf, [i])
-        newPdf.addPage(copiedPage)
+      pageRanges = Array.from({ length: metadata.pageCount }, (_, i) => ({
+        start: i + 1,
+        end: i + 1,
+      }))
+    }
 
-        const pdfBytes = await newPdf.save()
-        const result = await this.uploadFile(
-          userId,
-          `page-${i + 1}.pdf`,
-          Buffer.from(pdfBytes),
-          'application/pdf'
-        )
+    // Split PDF using core service
+    const splitBuffers = await pdfCoreService.splitPdf(pdfBuffer, pageRanges)
 
-        results.push(result)
-      }
-    } else {
-      // Split by specified ranges
-      for (let i = 0; i < pageRanges.length; i++) {
-        const range = pageRanges[i]
-        const newPdf = await PDFDocument.create()
-
-        const pageIndices = Array.from(
-          { length: range.end - range.start + 1 },
-          (_, idx) => range.start + idx - 1
-        )
-
-        const copiedPages = await newPdf.copyPages(pdf, pageIndices)
-        copiedPages.forEach((page) => newPdf.addPage(page))
-
-        const pdfBytes = await newPdf.save()
-        const result = await this.uploadFile(
-          userId,
-          `pages-${range.start}-${range.end}.pdf`,
-          Buffer.from(pdfBytes),
-          'application/pdf'
-        )
-
-        results.push(result)
-      }
+    // Upload all split PDFs
+    const results: Array<{ fileId: string; url: string }> = []
+    for (let i = 0; i < splitBuffers.length; i++) {
+      const range = pageRanges[i]
+      const fileName = `pages-${range.start}-${range.end}.pdf`
+      const result = await this.uploadFile(userId, fileName, splitBuffers[i], 'application/pdf')
+      results.push(result)
     }
 
     this.log('PDF split complete', { resultCount: results.length })
@@ -115,35 +78,154 @@ export class PdfProcessor extends BaseProcessor {
     fileId: string,
     userId: string,
     quality: 'low' | 'medium' | 'high' = 'medium'
-  ): Promise<{ fileId: string; url: string }> {
+  ): Promise<{ fileId: string; url: string; originalSize: number; compressedSize: number }> {
     this.log('Starting PDF compression', { fileId, quality })
 
     await this.validateInputFile(fileId)
-
     const pdfBuffer = await this.downloadFile(fileId)
-    const pdf = await PDFDocument.load(pdfBuffer)
 
-    // TODO: Implement actual compression logic
-    // For now, just re-save the PDF
-    // In production, you would:
-    // 1. Compress images within the PDF
-    // 2. Remove unused objects
-    // 3. Optimize fonts
-    // 4. Remove metadata
+    const originalSize = pdfBuffer.length
 
-    const compressedPdfBytes = await pdf.save({
-      useObjectStreams: true,
-      addDefaultPage: false,
-    })
+    // Compress PDF using compression service
+    const compressedBuffer = await pdfCompressionService.compressPdf(pdfBuffer, quality)
 
+    const compressedSize = compressedBuffer.length
+
+    // Upload compressed PDF
     const result = await this.uploadFile(
       userId,
       'compressed.pdf',
-      Buffer.from(compressedPdfBytes),
+      compressedBuffer,
       'application/pdf'
     )
 
-    this.log('PDF compression complete', { outputFileId: result.fileId })
+    this.log('PDF compression complete', {
+      outputFileId: result.fileId,
+      originalSize,
+      compressedSize,
+      reduction: ((1 - compressedSize / originalSize) * 100).toFixed(2) + '%',
+    })
+
+    return {
+      ...result,
+      originalSize,
+      compressedSize,
+    }
+  }
+
+  /**
+   * Add watermark to PDF
+   */
+  async addWatermark(
+    fileId: string,
+    userId: string,
+    watermarkText: string,
+    options?: any
+  ): Promise<{ fileId: string; url: string }> {
+    this.log('Starting PDF watermark', { fileId, watermarkText })
+
+    await this.validateInputFile(fileId)
+    const pdfBuffer = await this.downloadFile(fileId)
+
+    // Add watermark using security service
+    const watermarkedBuffer = await pdfSecurityService.addWatermark(
+      pdfBuffer,
+      watermarkText,
+      options
+    )
+
+    // Upload watermarked PDF
+    const result = await this.uploadFile(
+      userId,
+      'watermarked.pdf',
+      watermarkedBuffer,
+      'application/pdf'
+    )
+
+    this.log('PDF watermark complete', { outputFileId: result.fileId })
+
+    return result
+  }
+
+  /**
+   * Rotate PDF pages
+   */
+  async rotatePdf(
+    fileId: string,
+    userId: string,
+    pageNumbers: number[],
+    rotation: 90 | 180 | 270
+  ): Promise<{ fileId: string; url: string }> {
+    this.log('Starting PDF rotation', { fileId, pageNumbers, rotation })
+
+    await this.validateInputFile(fileId)
+    const pdfBuffer = await this.downloadFile(fileId)
+
+    // Rotate pages using core service
+    const rotatedBuffer = await pdfCoreService.rotatePages(pdfBuffer, pageNumbers, rotation)
+
+    // Upload rotated PDF
+    const result = await this.uploadFile(userId, 'rotated.pdf', rotatedBuffer, 'application/pdf')
+
+    this.log('PDF rotation complete', { outputFileId: result.fileId })
+
+    return result
+  }
+
+  /**
+   * Extract specific pages
+   */
+  async extractPages(
+    fileId: string,
+    userId: string,
+    pageNumbers: number[]
+  ): Promise<{ fileId: string; url: string }> {
+    this.log('Starting PDF page extraction', { fileId, pageNumbers })
+
+    await this.validateInputFile(fileId)
+    const pdfBuffer = await this.downloadFile(fileId)
+
+    // Extract pages using core service
+    const extractedBuffer = await pdfCoreService.extractPages(pdfBuffer, pageNumbers)
+
+    // Upload extracted PDF
+    const result = await this.uploadFile(
+      userId,
+      'extracted-pages.pdf',
+      extractedBuffer,
+      'application/pdf'
+    )
+
+    this.log('PDF page extraction complete', { outputFileId: result.fileId })
+
+    return result
+  }
+
+  /**
+   * Add page numbers to PDF
+   */
+  async addPageNumbers(
+    fileId: string,
+    userId: string,
+    options: any = {}
+  ): Promise<{ fileId: string; url: string }> {
+    this.log('Starting PDF page numbering', { fileId, options })
+
+    await this.validateInputFile(fileId)
+    const pdfBuffer = await this.downloadFile(fileId)
+
+    // Add page numbers using security service
+    const numberedBuffer = await pdfSecurityService.addPageNumbers(pdfBuffer, options)
+
+    // Upload numbered PDF
+    const result = await this.uploadFile(
+      userId,
+      'numbered.pdf',
+      numberedBuffer,
+      'application/pdf'
+    )
+
+    this.log('PDF page numbering complete', { outputFileId: result.fileId })
 
     return result
   }
