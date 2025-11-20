@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Status - DocOpsCloud</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="logo">DocOpsCloud</a>
+      <ul class="nav-links">
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="index.html" class="btn btn-secondary">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div style="max-width: 900px; margin: 8rem auto 4rem; padding: 0 1.5rem;">
+    <div style="margin-bottom: 2rem;">
+      <a href="dashboard.html" style="color: var(--purple-500); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+        <span>←</span> Back to Dashboard
+      </a>
+    </div>
+
+    <h1 style="font-size: 2.5rem; font-weight: 900; margin-bottom: 0.5rem;">Job Status</h1>
+    <p style="color: var(--text-secondary); margin-bottom: 2rem;">Job ID: job_abc123xyz</p>
+
+    <!-- Status Card -->
+    <div class="card">
+      <div style="display: flex; align-items: center; justify-between; margin-bottom: 2rem;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+            <span id="statusIcon" style="font-size: 2.5rem;">⚙️</span>
+            <h2 style="font-size: 2rem; font-weight: 900;">PDF Compression</h2>
+          </div>
+          <div id="statusText" class="badge badge-warning" style="display: inline-block;">Processing</div>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div id="progressSection">
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div id="progressBar" class="progress-fill" style="width: 45%;"></div>
+          </div>
+          <div class="progress-text">
+            <span>Progress</span>
+            <span id="progressPercent">45%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input File -->
+      <div style="margin-top: 2rem;">
+        <h3 style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 1rem;">Input File</h3>
+        <div style="background: var(--bg-tertiary); border: 1px solid var(--border-primary); border-radius: 0.75rem; padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <span style="font-size: 2rem;">📄</span>
+            <div>
+              <div style="font-weight: 600; margin-bottom: 0.25rem;">large-presentation.pdf</div>
+              <div style="font-size: 0.875rem; color: var(--text-secondary);">15.2 MB</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Output File (hidden initially) -->
+      <div id="outputSection" style="margin-top: 2rem; display: none;">
+        <h3 style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 1rem;">Output File</h3>
+        <div style="background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary)); border: 1px solid var(--border-accent); border-radius: 0.75rem; padding: 1.25rem; box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);">
+          <div style="display: flex; align-items: center; justify-between;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span style="font-size: 2rem;">📥</span>
+              <div>
+                <div style="font-weight: 600; margin-bottom: 0.25rem;">compressed-presentation.pdf</div>
+                <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                  <span id="outputSize">4.1 MB</span>
+                  <span style="color: var(--success); margin-left: 0.5rem;">73% smaller</span>
+                </div>
+              </div>
+            </div>
+            <button onclick="window.location.href='dashboard.html'" class="btn btn-primary">
+              Download
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Details -->
+      <div style="margin-top: 2rem;">
+        <h3 style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 1rem;">Details</h3>
+        <div style="background: var(--bg-tertiary); border: 1px solid var(--border-primary); border-radius: 0.75rem; padding: 1.25rem;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; font-size: 0.875rem;">
+            <div>
+              <span style="color: var(--text-secondary);">Created:</span>
+              <span style="margin-left: 0.5rem;">5 minutes ago</span>
+            </div>
+            <div>
+              <span style="color: var(--text-secondary);">Started:</span>
+              <span style="margin-left: 0.5rem;">4 minutes ago</span>
+            </div>
+            <div id="completedTime" style="display: none;">
+              <span style="color: var(--text-secondary);">Completed:</span>
+              <span style="margin-left: 0.5rem;">Just now</span>
+            </div>
+            <div>
+              <span style="color: var(--text-secondary);">Compression:</span>
+              <span style="margin-left: 0.5rem;">High quality</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div id="completedActions" style="display: none; margin-top: 2rem; display: flex; gap: 1rem;">
+      <a href="upload.html" class="btn btn-outline" style="flex: 1; text-align: center;">
+        Process Another File
+      </a>
+      <a href="dashboard.html" class="btn btn-secondary" style="flex: 1; text-align: center;">
+        Back to Dashboard
+      </a>
+    </div>
+
+  </div>
+
+  <script>
+    // Simulate job progress
+    let progress = 45;
+    const interval = setInterval(() => {
+      progress += Math.random() * 15;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+        completeJob();
+      }
+      document.getElementById('progressBar').style.width = progress + '%';
+      document.getElementById('progressPercent').textContent = Math.round(progress) + '%';
+    }, 800);
+
+    function completeJob() {
+      // Update status
+      document.getElementById('statusIcon').textContent = '✅';
+      document.getElementById('statusText').className = 'badge badge-success';
+      document.getElementById('statusText').textContent = 'Completed';
+
+      // Hide progress, show output
+      document.getElementById('progressSection').style.display = 'none';
+      document.getElementById('outputSection').style.display = 'block';
+      document.getElementById('completedTime').style.display = 'block';
+      document.getElementById('completedActions').style.display = 'flex';
+    }
+  </script>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2025 DocOpsCloud. All rights reserved.</p>
+  </footer>
+</body>
+</html>
