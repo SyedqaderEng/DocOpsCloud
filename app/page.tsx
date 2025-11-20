@@ -285,7 +285,7 @@ export default function HomePage() {
       <footer className="border-t border-[#312e81] py-8 px-6">
         <div className="max-w-7xl mx-auto text-center text-gray-500">
           <p>© 2025 DocOpsCloud. Built with Next.js 14 & TypeScript.</p>
-          <p className="mt-2 text-sm">Phase 5 - Excel/CSV Module Complete ✅</p>
+          <p className="mt-2 text-sm">Phase 6 - Image Processing Module Complete ✅ | All Core Modules Operational</p>
         </div>
       </footer>
     </div>
