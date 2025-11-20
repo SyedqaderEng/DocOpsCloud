@@ -1,11 +1,58 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { ALL_TOOLS } from '@/lib/tools-data'
+import { TIER_LIMITS } from '@/lib/config/constants'
+
+interface DashboardStats {
+  totalFiles: number
+  jobsThisMonth: number
+  completedJobs: number
+  processingJobs: number
+  storageUsed: string
+  usageThisMonth: number
+}
+
+interface Activity {
+  id: string
+  type: string
+  status: string
+  createdAt: string
+  completedAt?: string
+  metadata?: any
+}
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview')
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [activity, setActivity] = useState<Activity[]>([])
+  const [loading, setLoading] = useState(true)
+  const { data: session } = useSession()
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
+
+  const fetchDashboardData = async () => {
+    try {
+      const response = await fetch('/api/dashboard/stats')
+      if (response.ok) {
+        const data = await response.json()
+        setStats(data.stats)
+        setActivity(data.recentActivity)
+      }
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Get user tier info
+  const userTier = (session?.user as any)?.subscription_tier || 'FREE'
+  const tierLimits = TIER_LIMITS[userTier as keyof typeof TIER_LIMITS]
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
@@ -14,7 +61,7 @@ export default function DashboardPage() {
         {/* Logo */}
         <div className="p-5 border-b border-gray-200">
           <Link href="/" className="text-2xl font-extrabold text-gray-900">
-            Doc<span className="text-purple-600">Ops</span>Cloud
+            Doc<span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Ops</span>Cloud
           </Link>
         </div>
 
@@ -72,13 +119,17 @@ export default function DashboardPage() {
 
         {/* User Profile */}
         <div className="p-5 border-t border-gray-200">
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition">
-            <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-lg">
-              👤
+          <div className="flex items-center gap-3 p-3 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg cursor-pointer hover:from-indigo-100 hover:to-purple-100 transition">
+            <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-lg text-white">
+              {session?.user?.name?.charAt(0).toUpperCase() || '👤'}
             </div>
             <div className="flex-1">
-              <div className="font-semibold text-sm text-gray-900">John Doe</div>
-              <div className="text-xs text-green-600 font-medium">Pro Plan</div>
+              <div className="font-semibold text-sm text-gray-900">{session?.user?.name || 'User'}</div>
+              <div className={`text-xs font-medium ${
+                userTier === 'BUSINESS' ? 'text-indigo-600' :
+                userTier === 'PRO' ? 'text-purple-600' :
+                'text-gray-600'
+              }`}>{userTier === 'FREE' ? 'Free Plan' : userTier === 'PRO' ? 'Pro Plan' : 'Business Plan'}</div>
             </div>
           </div>
         </div>
@@ -103,15 +154,15 @@ export default function DashboardPage() {
               <span className="text-xl">🔔</span>
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
-            <button className="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition shadow-sm">
+            <Link href="/tools/pdf-merge" className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition shadow-sm">
               + New Job
-            </button>
+            </Link>
           </div>
         </header>
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-8 bg-gray-50">
-          {activeTab === 'overview' && <OverviewTab />}
+          {activeTab === 'overview' && <OverviewTab stats={stats} activity={activity} loading={loading} userTier={userTier} tierLimits={tierLimits} />}
           {activeTab === 'files' && <FilesTab />}
           {activeTab === 'jobs' && <JobsTab />}
           {activeTab === 'tools' && <ToolsTab />}
@@ -136,7 +187,7 @@ function NavItem({
 }) {
   const className = `flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm font-medium transition ${
     active
-      ? 'bg-purple-50 text-purple-600 border border-purple-200'
+      ? 'bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 border border-indigo-200'
       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
   }`
 
@@ -157,18 +208,59 @@ function NavItem({
   )
 }
 
-function OverviewTab() {
+function OverviewTab({ stats, activity, loading, userTier, tierLimits }: {
+  stats: DashboardStats | null
+  activity: Activity[]
+  loading: boolean
+  userTier: string
+  tierLimits: any
+}) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-gray-600">Loading dashboard...</div>
+      </div>
+    )
+  }
+
+  const usagePercentage = tierLimits.operations_per_month === -1
+    ? 0
+    : ((stats?.usageThisMonth || 0) / tierLimits.operations_per_month) * 100
+
   return (
     <div>
       <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back! 👋</h1>
       <p className="text-gray-600 mb-8">Here&apos;s what&apos;s happening with your documents</p>
 
+      {/* Tier Usage Banner */}
+      {userTier === 'FREE' && (
+        <div className="mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-bold text-gray-900 mb-1">Free Plan</h3>
+              <p className="text-sm text-gray-600">
+                {stats?.usageThisMonth || 0} of {tierLimits.operations_per_month} operations used this month
+              </p>
+            </div>
+            <Link href="/pricing" className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition shadow-sm">
+              Upgrade to Pro
+            </Link>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 h-2 rounded-full transition-all"
+              style={{ width: `${Math.min(usagePercentage, 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Stats Grid */}
       <div className="grid md:grid-cols-4 gap-6 mb-8">
-        <StatCard icon="📄" label="Total Files" value="47" change="+12%" />
-        <StatCard icon="⚡" label="Jobs This Month" value="156" change="+23%" />
-        <StatCard icon="✅" label="Completed" value="142" change="+18%" />
-        <StatCard icon="⏳" label="Processing" value="14" change="-5%" />
+        <StatCard icon="📄" label="Total Files" value={String(stats?.totalFiles || 0)} />
+        <StatCard icon="⚡" label="Jobs This Month" value={String(stats?.jobsThisMonth || 0)} />
+        <StatCard icon="✅" label="Completed" value={String(stats?.completedJobs || 0)} />
+        <StatCard icon="⏳" label="Processing" value={String(stats?.processingJobs || 0)} />
       </div>
 
       {/* Quick Actions */}
@@ -186,34 +278,46 @@ function OverviewTab() {
       <div>
         <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-          <ActivityItem
-            status="completed"
-            title="PDF Merge"
-            description="3 files merged"
-            time="2 minutes ago"
-          />
-          <ActivityItem
-            status="processing"
-            title="DOCX to PDF"
-            description="Converting document.docx"
-            time="5 minutes ago"
-          />
-          <ActivityItem
-            status="completed"
-            title="PDF Compression"
-            description="Reduced by 65%"
-            time="12 minutes ago"
-          />
-          <ActivityItem
-            status="completed"
-            title="Watermark Added"
-            description="Added to presentation.pdf"
-            time="1 hour ago"
-          />
+          {activity.length > 0 ? (
+            activity.map((item) => (
+              <ActivityItem
+                key={item.id}
+                status={item.status as 'completed' | 'processing' | 'failed'}
+                title={formatOperationType(item.type)}
+                description={item.metadata?.description || 'Processing...'}
+                time={formatTimeAgo(item.createdAt)}
+              />
+            ))
+          ) : (
+            <div className="p-8 text-center text-gray-500">
+              <div className="text-4xl mb-2">🚀</div>
+              <p>No recent activity. Start processing your first document!</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
   )
+}
+
+function formatOperationType(type: string): string {
+  return type
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (l) => l.toUpperCase())
+}
+
+function formatTimeAgo(dateString: string): string {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+
+  if (diffMins < 1) return 'Just now'
+  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`
+  const diffHours = Math.floor(diffMins / 60)
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`
+  const diffDays = Math.floor(diffHours / 24)
+  return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`
 }
 
 function FilesTab() {
@@ -296,27 +400,17 @@ function StatCard({
   icon,
   label,
   value,
-  change,
 }: {
   icon: string
   label: string
   value: string
-  change: string
 }) {
-  const isPositive = change.startsWith('+')
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-purple-300 hover:shadow-md transition">
+    <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-indigo-300 hover:shadow-md transition">
       <div className="flex items-start justify-between mb-4">
         <span className="text-3xl">{icon}</span>
-        <span
-          className={`text-xs font-bold px-2 py-1 rounded ${
-            isPositive ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
-          }`}
-        >
-          {change}
-        </span>
       </div>
-      <div className="text-3xl font-bold text-gray-900 mb-1">{value}</div>
+      <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-1">{value}</div>
       <div className="text-sm text-gray-600">{label}</div>
     </div>
   )
@@ -326,10 +420,10 @@ function ActionCard({ icon, title, href }: { icon: string; title: string; href: 
   return (
     <Link
       href={href}
-      className="bg-white border border-gray-200 rounded-xl p-6 hover:border-purple-300 hover:shadow-md transition text-center group"
+      className="bg-white border border-gray-200 rounded-xl p-6 hover:border-indigo-300 hover:shadow-md transition text-center group"
     >
       <div className="text-4xl mb-3">{icon}</div>
-      <div className="font-semibold text-gray-900 group-hover:text-purple-600 transition">{title}</div>
+      <div className="font-semibold text-gray-900 group-hover:bg-gradient-to-r group-hover:from-indigo-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent transition">{title}</div>
     </Link>
   )
 }
