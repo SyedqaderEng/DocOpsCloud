@@ -606,7 +606,7 @@ model AuditLog {
 
   // Action details
   action          String
-  resource        String
+  resource_type   String
   resource_id     String?
   metadata        Json?
 
@@ -618,6 +618,63 @@ model AuditLog {
 
   @@index([user_id, created_at])
   @@index([action])
-  @@index([resource, resource_id])
+  @@index([resource_type, resource_id])
   @@map("audit_logs")
+}
+
+// ==================== SSO CONFIGURATION ====================
+
+model SSOConfiguration {
+  id              String   @id @default(cuid())
+  organization_id String?  // For enterprise multi-tenancy
+
+  // Provider details
+  provider_type   String   // 'saml', 'oidc', 'okta', 'azure-ad'
+  provider_name   String   // Display name
+
+  // SAML specific
+  entity_id       String?
+  sso_url         String?
+  certificate     String?  @db.Text
+
+  // OIDC specific
+  client_id       String?
+  client_secret   String?  @db.Text
+  discovery_url   String?
+
+  // Common settings
+  enabled         Boolean  @default(false)
+  auto_provision  Boolean  @default(false) // Auto-create users on first login
+  default_role    String?  // Default role for auto-provisioned users
+
+  // Attribute mappings (JSON)
+  attribute_mappings Json?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([organization_id, provider_type])
+  @@index([provider_type])
+  @@index([enabled])
+  @@map("sso_configurations")
+}
+
+model SSOSession {
+  id          String   @id @default(cuid())
+  user_id     String
+  provider_id String
+
+  // Session details
+  sso_user_id String   // User ID from SSO provider
+  attributes  Json?    // All attributes from SSO response
+  groups      String[] // User groups from SSO
+
+  // Session management
+  expires_at  DateTime
+  created_at  DateTime @default(now())
+
+  @@index([user_id])
+  @@index([provider_id])
+  @@index([expires_at])
+  @@map("sso_sessions")
 }
