@@ -16,3 +16,4 @@ export {
   type AuthUser,
 } from './auth'
 export { AuthProvider, useAuth } from './AuthContext'
+export { verifyFirebaseToken, getUserFromRequest } from './admin'

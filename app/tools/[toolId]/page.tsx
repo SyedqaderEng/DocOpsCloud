@@ -86,7 +86,7 @@ export default function ToolPage() {
     return <File className="w-6 h-6 text-gray-400" />
   }
 
-  // Simulate processing (replace with actual API call)
+  // Process files via API
   const processFiles = async () => {
     if (uploadedFiles.length === 0) return
 
@@ -94,23 +94,49 @@ export default function ToolPage() {
     setProgress(0)
     setError(null)
 
-    // Simulate upload progress
-    for (let i = 0; i <= 30; i++) {
-      await new Promise(r => setTimeout(r, 50))
-      setProgress(i)
+    try {
+      const formData = new FormData()
+      uploadedFiles.forEach((file, index) => {
+        formData.append(`file${index}`, file)
+      })
+      formData.append('toolId', toolId)
+
+      // Upload progress simulation
+      const uploadInterval = setInterval(() => {
+        setProgress(prev => Math.min(prev + 5, 30))
+      }, 100)
+
+      const response = await fetch(`/api/tools/${toolId}`, {
+        method: 'POST',
+        body: formData,
+      })
+
+      clearInterval(uploadInterval)
+      setProgress(30)
+      setStatus('processing')
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Processing failed')
+      }
+
+      // Processing progress simulation
+      const processInterval = setInterval(() => {
+        setProgress(prev => Math.min(prev + 10, 95))
+      }, 200)
+
+      const result = await response.json()
+      clearInterval(processInterval)
+      setProgress(100)
+
+      if (result.downloadUrl) {
+        setResultUrl(result.downloadUrl)
+      }
+      setStatus('complete')
+    } catch (err) {
+      setStatus('error')
+      setError(err instanceof Error ? err.message : 'Processing failed')
     }
-
-    setStatus('processing')
-
-    // Simulate processing progress
-    for (let i = 30; i <= 100; i++) {
-      await new Promise(r => setTimeout(r, 80))
-      setProgress(i)
-    }
-
-    // Simulate success
-    setStatus('complete')
-    setResultUrl('#download') // Replace with actual download URL
   }
 
   if (!tool) {
