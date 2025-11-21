@@ -111,6 +111,38 @@ export const ALL_TOOLS = {
       { id: "excel-template", name: "Apply Template", description: "Use predefined formats", icon: "🎨" },
     ]
   },
+  utility: {
+    name: "Utility & Analysis Tools",
+    icon: "🔧",
+    count: 25,
+    tools: [
+      { id: "text-analyzer", name: "Text Analyzer", description: "Word count, readability score, sentiment analysis", icon: "📊" },
+      { id: "hash-generator", name: "Hash Generator", description: "Generate MD5, SHA-1, SHA-256 checksums", icon: "🔐" },
+      { id: "file-compare", name: "File Comparator", description: "Compare two files and find differences", icon: "🔍" },
+      { id: "qr-generator", name: "QR Code Generator", description: "Create QR codes from text or URLs", icon: "📱" },
+      { id: "barcode-generator", name: "Barcode Generator", description: "Generate various barcode formats", icon: "📊" },
+      { id: "json-formatter", name: "JSON Formatter", description: "Format and validate JSON data", icon: "{ }" },
+      { id: "xml-formatter", name: "XML Formatter", description: "Format and validate XML data", icon: "📄" },
+      { id: "base64-encode", name: "Base64 Encoder", description: "Encode/decode Base64 strings", icon: "🔢" },
+      { id: "url-encoder", name: "URL Encoder", description: "Encode/decode URL strings", icon: "🔗" },
+      { id: "markdown-preview", name: "Markdown Preview", description: "Render markdown to HTML preview", icon: "📝" },
+      { id: "lorem-generator", name: "Lorem Ipsum Generator", description: "Generate placeholder text", icon: "📜" },
+      { id: "password-generator", name: "Password Generator", description: "Create strong random passwords", icon: "🔑" },
+      { id: "uuid-generator", name: "UUID Generator", description: "Generate unique identifiers", icon: "🆔" },
+      { id: "color-converter", name: "Color Converter", description: "Convert between HEX, RGB, HSL", icon: "🎨" },
+      { id: "timestamp-converter", name: "Timestamp Converter", description: "Unix timestamp to date conversion", icon: "⏰" },
+      { id: "regex-tester", name: "Regex Tester", description: "Test regular expressions", icon: "🔤" },
+      { id: "diff-checker", name: "Diff Checker", description: "Compare text and find differences", icon: "📊" },
+      { id: "word-frequency", name: "Word Frequency", description: "Analyze word usage patterns", icon: "📈" },
+      { id: "character-counter", name: "Character Counter", description: "Count characters, words, sentences", icon: "🔢" },
+      { id: "case-converter", name: "Case Converter", description: "Convert text case styles", icon: "Aa" },
+      { id: "duplicate-finder", name: "Duplicate Finder", description: "Find duplicate lines in text", icon: "🔍" },
+      { id: "line-sorter", name: "Line Sorter", description: "Sort lines alphabetically or numerically", icon: "🔀" },
+      { id: "text-reverser", name: "Text Reverser", description: "Reverse text or words", icon: "↩️" },
+      { id: "slug-generator", name: "Slug Generator", description: "Create URL-friendly slugs", icon: "🔗" },
+      { id: "html-encoder", name: "HTML Encoder", description: "Encode/decode HTML entities", icon: "🌐" },
+    ]
+  },
   image: {
     name: "Image Tools",
     icon: "🖼️",
@@ -154,6 +186,7 @@ export const TOOL_CATEGORIES = [
   { id: "pdf", ...ALL_TOOLS.pdf },
   { id: "word", ...ALL_TOOLS.word },
   { id: "excel", ...ALL_TOOLS.excel },
+  { id: "utility", ...ALL_TOOLS.utility },
   { id: "image", ...ALL_TOOLS.image },
 ]
 

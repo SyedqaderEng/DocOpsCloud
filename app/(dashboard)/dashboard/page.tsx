@@ -7,6 +7,12 @@ import { ALL_TOOLS } from '@/lib/tools-data'
 import { TIER_LIMITS } from '@/lib/config/constants'
 import { useRouter } from 'next/navigation'
 import { Loader2, LogOut } from 'lucide-react'
+import dynamic from 'next/dynamic'
+
+const AnalyticsPanel = dynamic(() => import('@/components/dashboard/AnalyticsPanel'), { ssr: false })
+const ActivityMonitor = dynamic(() => import('@/components/dashboard/ActivityMonitor'), { ssr: false })
+const QuickTools = dynamic(() => import('@/components/dashboard/QuickTools'), { ssr: false })
+const StreakWidget = dynamic(() => import('@/components/dashboard/StreakWidget'), { ssr: false })
 
 interface DashboardStats {
   totalFiles: number
@@ -103,6 +109,7 @@ export default function DashboardPage() {
           <div className="mb-6">
             <div className="text-xs font-bold text-gray-500 uppercase mb-2 px-3">Main</div>
             <NavItem icon="📊" label="Overview" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
+            <NavItem icon="📈" label="Analytics" active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} />
             <NavItem icon="🗂️" label="My Files" active={activeTab === 'files'} onClick={() => setActiveTab('files')} />
             <NavItem icon="⚙️" label="Jobs" active={activeTab === 'jobs'} onClick={() => setActiveTab('jobs')} />
             <NavItem icon="🛠️" label="All Tools" active={activeTab === 'tools'} onClick={() => setActiveTab('tools')} />
@@ -113,6 +120,7 @@ export default function DashboardPage() {
             <NavItem icon="📄" label="PDF Tools" href="/tools/pdf-merge" />
             <NavItem icon="📝" label="Word Tools" href="/tools/word-to-pdf" />
             <NavItem icon="📊" label="Excel Tools" href="/tools/excel-to-csv" />
+            <NavItem icon="🔧" label="Utility Tools" href="/tools/text-analyzer" />
             <NavItem icon="🖼️" label="Image Tools" href="/tools/image-resize" />
           </div>
 
@@ -161,6 +169,7 @@ export default function DashboardPage() {
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-8">
           {activeTab === 'overview' && <OverviewTab stats={stats} activity={activity} loading={loading} userTier={userTier} tierLimits={tierLimits} />}
+          {activeTab === 'analytics' && <AnalyticsTab />}
           {activeTab === 'files' && <FilesTab />}
           {activeTab === 'jobs' && <JobsTab />}
           {activeTab === 'tools' && <ToolsTab />}
@@ -278,11 +287,37 @@ function JobsTab() {
   )
 }
 
+function AnalyticsTab() {
+  return (
+    <div>
+      <h1 className="text-3xl font-bold text-white mb-2">Analytics & Progress</h1>
+      <p className="text-gray-300 mb-8">Track your productivity, achievements, and usage patterns</p>
+
+      <div className="grid lg:grid-cols-3 gap-6 mb-6">
+        <div className="lg:col-span-2">
+          <StreakWidget />
+        </div>
+        <QuickTools />
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <AnalyticsPanel />
+        </div>
+        <div className="space-y-6">
+          <ActivityMonitor />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function ToolsTab() {
   const toolCategories = [
     { id: 'pdf', data: ALL_TOOLS.pdf },
     { id: 'word', data: ALL_TOOLS.word },
     { id: 'excel', data: ALL_TOOLS.excel },
+    { id: 'utility', data: ALL_TOOLS.utility },
     { id: 'image', data: ALL_TOOLS.image },
   ]
 
@@ -290,7 +325,7 @@ function ToolsTab() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">All Tools</h1>
-        <p className="text-gray-300">Browse and access all 120+ document processing tools</p>
+        <p className="text-gray-300">Browse and access all 145+ document processing tools</p>
       </div>
       <div className="space-y-8">
         {toolCategories.map((category) => (
