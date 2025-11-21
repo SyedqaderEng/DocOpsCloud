@@ -170,3 +170,13 @@ export const getAllTools = () => {
 export const getToolById = (id: string) => {
   return getAllTools().find((tool) => tool.id === id)
 }
+
+export const getAllToolsFlat = () => {
+  const tools: Array<{ id: string; name: string; description: string; icon: string; category: string }> = []
+  Object.entries(ALL_TOOLS).forEach(([categoryKey, category]) => {
+    category.tools.forEach(tool => {
+      tools.push({ ...tool, category: categoryKey })
+    })
+  })
+  return tools
+}
