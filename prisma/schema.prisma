@@ -309,3 +309,315 @@ model ApiKey {
   @@index([key_hash])
   @@map("api_keys")
 }
+
+// ==================== GAMIFICATION ====================
+
+model UserStats {
+  id              String   @id @default(cuid())
+  user_id         String   @unique
+
+  // XP & Level
+  total_xp        Int      @default(0)
+  level           Int      @default(1)
+
+  // Streak tracking
+  current_streak  Int      @default(0)
+  longest_streak  Int      @default(0)
+  last_active_date DateTime?
+
+  // Usage stats
+  total_operations     Int @default(0)
+  total_files_processed Int @default(0)
+  total_storage_used   BigInt @default(0)
+
+  // Tool usage
+  unique_tools_used    String[] @default([])
+  favorite_tool        String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("user_stats")
+}
+
+model UserAchievement {
+  id              String   @id @default(cuid())
+  user_id         String
+  achievement_id  String
+
+  // Achievement details
+  unlocked_at     DateTime @default(now())
+  xp_awarded      Int      @default(0)
+
+  @@unique([user_id, achievement_id])
+  @@index([user_id])
+  @@map("user_achievements")
+}
+
+model DailyActivity {
+  id          String   @id @default(cuid())
+  user_id     String
+  date        DateTime @db.Date
+
+  // Daily metrics
+  operations_count  Int @default(0)
+  files_processed   Int @default(0)
+  xp_earned         Int @default(0)
+
+  @@unique([user_id, date])
+  @@index([user_id])
+  @@index([date])
+  @@map("daily_activity")
+}
+
+model Leaderboard {
+  id          String   @id @default(cuid())
+  user_id     String
+  period      LeaderboardPeriod
+  period_start DateTime
+
+  // Scores
+  total_xp    Int @default(0)
+  operations  Int @default(0)
+  streak      Int @default(0)
+  rank        Int?
+
+  updated_at  DateTime @updatedAt
+
+  @@unique([user_id, period, period_start])
+  @@index([period, period_start, total_xp])
+  @@map("leaderboard")
+}
+
+enum LeaderboardPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+  ALL_TIME
+}
+
+// ==================== WORKFLOWS ====================
+
+model Workflow {
+  id          String   @id @default(cuid())
+  user_id     String
+  team_id     String?
+
+  // Workflow details
+  name        String
+  description String?
+  trigger     Json
+  steps       Json
+  variables   Json?
+
+  // Status
+  status      WorkflowStatus @default(DRAFT)
+  is_template Boolean        @default(false)
+  version     Int            @default(1)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  runs WorkflowRun[]
+
+  @@index([user_id])
+  @@index([team_id])
+  @@index([status])
+  @@map("workflows")
+}
+
+enum WorkflowStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+model WorkflowRun {
+  id           String    @id @default(cuid())
+  workflow_id  String
+  triggered_by String
+
+  // Run details
+  trigger_type String
+  trigger_data Json?
+  status       WorkflowRunStatus
+  current_step Int       @default(0)
+  step_results Json?
+  error        String?
+
+  started_at   DateTime  @default(now())
+  completed_at DateTime?
+
+  // Relations
+  workflow Workflow @relation(fields: [workflow_id], references: [id])
+
+  @@index([workflow_id])
+  @@index([status])
+  @@index([started_at])
+  @@map("workflow_runs")
+}
+
+enum WorkflowRunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model ScheduledTrigger {
+  id          String   @id @default(cuid())
+  workflow_id String   @unique
+
+  // Schedule details
+  cron_expr   String
+  timezone    String   @default("UTC")
+  next_run    DateTime
+  last_run    DateTime?
+  enabled     Boolean  @default(true)
+
+  @@map("scheduled_triggers")
+}
+
+// ==================== TEAMS ====================
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  owner_id    String
+
+  // Team settings
+  logo_url    String?
+  settings    Json     @default("{}")
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  members TeamMember[]
+
+  @@index([owner_id])
+  @@map("teams")
+}
+
+model TeamMember {
+  id       String   @id @default(cuid())
+  team_id  String
+  user_id  String
+  role     TeamRole
+
+  // Custom permissions
+  permissions Json?
+
+  joined_at DateTime @default(now())
+
+  // Relations
+  team Team @relation(fields: [team_id], references: [id], onDelete: Cascade)
+
+  @@unique([team_id, user_id])
+  @@index([user_id])
+  @@map("team_members")
+}
+
+enum TeamRole {
+  OWNER
+  ADMIN
+  MEMBER
+  GUEST
+}
+
+model TeamInvite {
+  id       String   @id @default(cuid())
+  team_id  String
+  email    String
+  role     TeamRole
+  token    String   @unique
+
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  @@index([token])
+  @@index([email])
+  @@map("team_invites")
+}
+
+// ==================== AI USAGE ====================
+
+model AIUsage {
+  id           String   @id @default(cuid())
+  user_id      String
+
+  // Operation details
+  operation    String
+  model        String
+  tokens_input Int
+  tokens_output Int
+  cost         Decimal  @db.Decimal(10, 6)
+  cached       Boolean  @default(false)
+  latency_ms   Int
+
+  created_at DateTime @default(now())
+
+  @@index([user_id, created_at])
+  @@index([operation])
+  @@map("ai_usage")
+}
+
+// ==================== INTEGRATIONS ====================
+
+model IntegrationConnection {
+  id             String   @id @default(cuid())
+  user_id        String
+  team_id        String?
+
+  // Integration details
+  provider       String
+  credentials    String   // Encrypted JSON
+  status         IntegrationStatus
+  metadata       Json?
+
+  last_used      DateTime?
+  expires_at     DateTime?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([user_id, provider])
+  @@index([team_id])
+  @@map("integration_connections")
+}
+
+enum IntegrationStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+  ERROR
+}
+
+// ==================== AUDIT LOG ====================
+
+model AuditLog {
+  id              String   @id @default(cuid())
+  user_id         String?
+  organization_id String?
+
+  // Action details
+  action          String
+  resource        String
+  resource_id     String?
+  metadata        Json?
+
+  // Request info
+  ip_address      String?
+  user_agent      String?
+
+  created_at DateTime @default(now())
+
+  @@index([user_id, created_at])
+  @@index([action])
+  @@index([resource, resource_id])
+  @@map("audit_logs")
+}

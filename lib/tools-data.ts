@@ -179,6 +179,74 @@ export const ALL_TOOLS = {
       { id: "image-batch", name: "Batch Processing", description: "Process multiple images", icon: "⚙️" },
       { id: "image-gif-maker", name: "Create GIF", description: "Make animated GIFs", icon: "🎬" },
     ]
+  },
+  video: {
+    name: "Video Tools",
+    icon: "🎬",
+    count: 20,
+    tools: [
+      { id: "video-compress", name: "Compress Video", description: "Reduce video file size up to 80%", icon: "🗜️" },
+      { id: "video-convert", name: "Convert Video", description: "Convert between MP4, WebM, AVI, MOV", icon: "🔄" },
+      { id: "video-trim", name: "Trim Video", description: "Cut video to specific duration", icon: "✂️" },
+      { id: "video-merge", name: "Merge Videos", description: "Combine multiple videos into one", icon: "🔗" },
+      { id: "video-split", name: "Split Video", description: "Divide video into segments", icon: "📐" },
+      { id: "video-rotate", name: "Rotate Video", description: "Rotate by 90, 180, or 270 degrees", icon: "🔄" },
+      { id: "video-crop", name: "Crop Video", description: "Remove unwanted areas", icon: "✂️" },
+      { id: "video-resize", name: "Resize Video", description: "Change video dimensions", icon: "📐" },
+      { id: "video-to-gif", name: "Video to GIF", description: "Create animated GIFs from video", icon: "🎞️" },
+      { id: "video-extract-audio", name: "Extract Audio", description: "Get audio track from video", icon: "🎵" },
+      { id: "video-remove-audio", name: "Remove Audio", description: "Mute video track", icon: "🔇" },
+      { id: "video-add-audio", name: "Add Audio", description: "Add background music or voiceover", icon: "🎶" },
+      { id: "video-add-subtitles", name: "Add Subtitles", description: "Burn subtitles into video", icon: "💬" },
+      { id: "video-extract-frames", name: "Extract Frames", description: "Get images from video", icon: "🖼️" },
+      { id: "video-speed", name: "Change Speed", description: "Speed up or slow down video", icon: "⏩" },
+      { id: "video-reverse", name: "Reverse Video", description: "Play video backwards", icon: "⏪" },
+      { id: "video-watermark", name: "Add Watermark", description: "Overlay logo or text", icon: "🏷️" },
+      { id: "video-thumbnail", name: "Generate Thumbnail", description: "Create video preview image", icon: "🖼️" },
+      { id: "video-stabilize", name: "Stabilize Video", description: "Remove camera shake", icon: "📷" },
+      { id: "video-metadata", name: "Edit Metadata", description: "Change video properties", icon: "ℹ️" },
+    ]
+  },
+  audio: {
+    name: "Audio Tools",
+    icon: "🎵",
+    count: 15,
+    tools: [
+      { id: "audio-convert", name: "Convert Audio", description: "Convert MP3, WAV, FLAC, OGG, AAC", icon: "🔄" },
+      { id: "audio-compress", name: "Compress Audio", description: "Reduce audio file size", icon: "🗜️" },
+      { id: "audio-trim", name: "Trim Audio", description: "Cut audio to specific duration", icon: "✂️" },
+      { id: "audio-merge", name: "Merge Audio", description: "Combine multiple audio files", icon: "🔗" },
+      { id: "audio-split", name: "Split Audio", description: "Divide audio into segments", icon: "📐" },
+      { id: "audio-normalize", name: "Normalize Audio", description: "Adjust volume levels", icon: "📊" },
+      { id: "audio-fade", name: "Add Fade", description: "Fade in/out effects", icon: "📈" },
+      { id: "audio-remove-noise", name: "Remove Noise", description: "Clean up background noise", icon: "🔇" },
+      { id: "audio-speed", name: "Change Speed", description: "Speed up or slow down", icon: "⏩" },
+      { id: "audio-reverse", name: "Reverse Audio", description: "Play audio backwards", icon: "⏪" },
+      { id: "audio-extract-vocals", name: "Extract Vocals", description: "Separate voice from music", icon: "🎤" },
+      { id: "audio-remove-vocals", name: "Remove Vocals", description: "Create karaoke version", icon: "🎶" },
+      { id: "audio-equalizer", name: "Equalizer", description: "Adjust frequency bands", icon: "🎛️" },
+      { id: "audio-metadata", name: "Edit Metadata", description: "Change ID3 tags", icon: "ℹ️" },
+      { id: "audio-waveform", name: "Generate Waveform", description: "Create visual waveform image", icon: "📊" },
+    ]
+  },
+  archive: {
+    name: "Archive & Compression",
+    icon: "📦",
+    count: 12,
+    tools: [
+      { id: "zip-create", name: "Create ZIP", description: "Compress files to ZIP archive", icon: "📦" },
+      { id: "zip-extract", name: "Extract ZIP", description: "Unzip archive contents", icon: "📂" },
+      { id: "rar-extract", name: "Extract RAR", description: "Unpack RAR archives", icon: "📂" },
+      { id: "7z-create", name: "Create 7Z", description: "High compression 7-Zip archive", icon: "📦" },
+      { id: "7z-extract", name: "Extract 7Z", description: "Unpack 7-Zip archives", icon: "📂" },
+      { id: "tar-create", name: "Create TAR.GZ", description: "Unix-style archive", icon: "📦" },
+      { id: "tar-extract", name: "Extract TAR.GZ", description: "Unpack tar archives", icon: "📂" },
+      { id: "archive-password", name: "Password Protect", description: "Encrypt archive with password", icon: "🔒" },
+      { id: "archive-split", name: "Split Archive", description: "Divide large archives", icon: "✂️" },
+      { id: "archive-repair", name: "Repair Archive", description: "Fix corrupted archives", icon: "🔧" },
+      { id: "archive-list", name: "List Contents", description: "View archive contents without extracting", icon: "📋" },
+      { id: "archive-convert", name: "Convert Archive", description: "Change archive format", icon: "🔄" },
+    ]
   }
 }
 
@@ -186,8 +254,11 @@ export const TOOL_CATEGORIES = [
   { id: "pdf", ...ALL_TOOLS.pdf },
   { id: "word", ...ALL_TOOLS.word },
   { id: "excel", ...ALL_TOOLS.excel },
-  { id: "utility", ...ALL_TOOLS.utility },
   { id: "image", ...ALL_TOOLS.image },
+  { id: "video", ...ALL_TOOLS.video },
+  { id: "audio", ...ALL_TOOLS.audio },
+  { id: "archive", ...ALL_TOOLS.archive },
+  { id: "utility", ...ALL_TOOLS.utility },
 ]
 
 export const getTotalToolCount = () => {
