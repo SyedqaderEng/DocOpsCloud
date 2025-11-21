@@ -1,6 +1,7 @@
 // Workflow Actions Library
 
 import { ExecutionContext } from '../engine/executor'
+import { INTEGRATION_ACTION_METADATA } from './integrations'
 
 export interface ActionResult {
   success: boolean
@@ -417,4 +418,6 @@ export const ACTION_METADATA = {
     category: 'notify',
     inputs: ['channel', 'message'],
   },
+  // Include integration actions metadata
+  ...INTEGRATION_ACTION_METADATA,
 }
