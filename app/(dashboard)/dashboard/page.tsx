@@ -32,6 +32,23 @@ interface Activity {
   metadata?: Record<string, unknown>
 }
 
+interface UserProfile {
+  id: string
+  email: string
+  name: string | null
+  subscription_tier: 'FREE' | 'PRO' | 'BUSINESS'
+  subscription_status: string
+  subscription_expires_at: string | null
+}
+
+interface UsageStats {
+  dailyUsage: number
+  monthlyUsage: number
+  dailyLimit: number
+  monthlyLimit: number
+  tier: string
+}
+
 export default function DashboardPage() {
   const router = useRouter()
   const { user, loading: authLoading, logout } = useAuth()
@@ -39,6 +56,8 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [activity, setActivity] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [usageStats, setUsageStats] = useState<UsageStats | null>(null)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -49,6 +68,8 @@ export default function DashboardPage() {
   useEffect(() => {
     if (user) {
       fetchDashboardData()
+      fetchUserProfile()
+      fetchUsageStats()
     }
   }, [user])
 
@@ -64,6 +85,46 @@ export default function DashboardPage() {
       console.error('Failed to fetch dashboard data:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchUserProfile = async () => {
+    try {
+      const idToken = await user?.getIdToken()
+      if (!idToken) return
+
+      const response = await fetch('/api/user/profile', {
+        headers: {
+          'Authorization': `Bearer ${idToken}`,
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setUserProfile(data.user)
+      }
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error)
+    }
+  }
+
+  const fetchUsageStats = async () => {
+    try {
+      const idToken = await user?.getIdToken()
+      if (!idToken) return
+
+      const response = await fetch('/api/user/usage', {
+        headers: {
+          'Authorization': `Bearer ${idToken}`,
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setUsageStats(data.usage)
+      }
+    } catch (error) {
+      console.error('Failed to fetch usage stats:', error)
     }
   }
 
@@ -89,8 +150,8 @@ export default function DashboardPage() {
     return null
   }
 
-  // Get user tier info (default to FREE)
-  const userTier = 'FREE'
+  // Get user tier info from profile or default to FREE
+  const userTier = userProfile?.subscription_tier || 'FREE'
   const tierLimits = TIER_LIMITS[userTier as keyof typeof TIER_LIMITS]
 
   return (
@@ -168,7 +229,7 @@ export default function DashboardPage() {
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-8">
-          {activeTab === 'overview' && <OverviewTab stats={stats} activity={activity} loading={loading} userTier={userTier} tierLimits={tierLimits} />}
+          {activeTab === 'overview' && <OverviewTab stats={stats} activity={activity} loading={loading} userTier={userTier} tierLimits={tierLimits} usageStats={usageStats} />}
           {activeTab === 'analytics' && <AnalyticsTab />}
           {activeTab === 'files' && <FilesTab />}
           {activeTab === 'jobs' && <JobsTab />}
@@ -191,7 +252,7 @@ function NavItem({ icon, label, active, onClick, href }: { icon: string; label: 
   return <button onClick={onClick} className={className + ' w-full text-left'}><span className="text-lg">{icon}</span>{label}</button>
 }
 
-function OverviewTab({ stats, activity, loading, userTier, tierLimits }: { stats: DashboardStats | null; activity: Activity[]; loading: boolean; userTier: string; tierLimits: typeof TIER_LIMITS.FREE }) {
+function OverviewTab({ stats, activity, loading, userTier, tierLimits, usageStats }: { stats: DashboardStats | null; activity: Activity[]; loading: boolean; userTier: string; tierLimits: typeof TIER_LIMITS.FREE; usageStats: UsageStats | null }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -200,7 +261,13 @@ function OverviewTab({ stats, activity, loading, userTier, tierLimits }: { stats
     )
   }
 
-  const usagePercentage = tierLimits.operations_per_month === -1 ? 0 : ((stats?.usageThisMonth || 0) / tierLimits.operations_per_month) * 100
+  // Use actual usage stats if available, otherwise fall back to stats
+  const currentUsage = usageStats?.monthlyUsage || stats?.usageThisMonth || 0
+  const monthlyLimit = usageStats?.monthlyLimit || tierLimits.operations_per_month
+  const dailyUsage = usageStats?.dailyUsage || 0
+  const dailyLimit = usageStats?.dailyLimit || tierLimits.operations_per_day || -1
+
+  const usagePercentage = monthlyLimit === -1 ? 0 : (currentUsage / monthlyLimit) * 100
 
   return (
     <div>
@@ -212,7 +279,10 @@ function OverviewTab({ stats, activity, loading, userTier, tierLimits }: { stats
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="font-bold text-white mb-1">Free Plan</h3>
-              <p className="text-sm text-gray-300">{stats?.usageThisMonth || 0} of {tierLimits.operations_per_month} operations used</p>
+              <p className="text-sm text-gray-300">
+                Today: {dailyUsage} of {dailyLimit} operations |
+                This month: {currentUsage} of {monthlyLimit} operations
+              </p>
             </div>
             <Link href="/pricing" className="btn-neon px-6 py-2">Upgrade to Pro</Link>
           </div>

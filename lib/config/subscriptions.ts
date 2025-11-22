@@ -7,58 +7,56 @@ export const SUBSCRIPTION_PLANS = {
     price: 0,
     yearlyPrice: 0,
     features: [
-      '10 operations per month',
-      'Basic features only',
-      '5MB file size limit',
-      'Standard processing speed',
-      'Email support',
+      '5 operations/day',
+      'All tools included',
+      '10MB max file size',
+      'Basic support',
     ],
     limits: {
-      monthlyOperations: 10,
-      maxFileSize: 5 * 1024 * 1024, // 5MB in bytes
+      dailyOperations: 5,
+      monthlyOperations: 150,
+      maxFileSize: 10 * 1024 * 1024, // 10MB in bytes
       concurrentJobs: 1,
     },
   },
   PRO: {
     name: 'Pro',
     tier: SubscriptionTier.PRO,
-    price: 9,
+    price: 0,
     yearlyPrice: 79,
     stripePriceId: process.env.STRIPE_PRO_PRICE_ID,
     features: [
-      '500 operations per month',
-      'All features included',
-      '100MB file size limit',
+      '1000 operations/month',
+      '500MB max file size',
       'Priority processing',
-      'Email & chat support',
-      'Processing history (30 days)',
+      'API access',
+      'Email support',
     ],
     limits: {
-      monthlyOperations: 500,
-      maxFileSize: 100 * 1024 * 1024, // 100MB
-      concurrentJobs: 3,
+      dailyOperations: -1, // Unlimited
+      monthlyOperations: 1000,
+      maxFileSize: 500 * 1024 * 1024, // 500MB
+      concurrentJobs: 5,
     },
   },
   BUSINESS: {
     name: 'Business',
     tier: SubscriptionTier.BUSINESS,
-    price: 19,
-    yearlyPrice: 149,
+    price: 0,
+    yearlyPrice: 299,
     stripePriceId: process.env.STRIPE_BUSINESS_PRICE_ID,
     features: [
       'Unlimited operations',
-      'All features + API access',
-      '500MB file size limit',
-      'Highest priority processing',
-      'Dedicated support',
-      'Processing history (90 days)',
-      'API access with webhooks',
-      'Batch processing',
+      '2GB max file size',
+      '20 concurrent jobs',
+      'Custom branding',
+      'Priority support',
     ],
     limits: {
+      dailyOperations: -1, // Unlimited
       monthlyOperations: -1, // Unlimited
-      maxFileSize: 500 * 1024 * 1024, // 500MB
-      concurrentJobs: 10,
+      maxFileSize: 2 * 1024 * 1024 * 1024, // 2GB
+      concurrentJobs: 20,
     },
   },
 } as const

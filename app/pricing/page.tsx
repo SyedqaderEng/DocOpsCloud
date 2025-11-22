@@ -86,9 +86,48 @@ export default function PricingPage() {
 
   const initiatePayment = async (planId: string) => {
     try {
-      // TODO: Integrate with Stripe
-      // For now, just redirect to dashboard
-      router.push('/dashboard')
+      // Get Firebase ID token
+      const idToken = await user?.getIdToken()
+
+      if (!idToken) {
+        alert('Please sign in to continue')
+        router.push('/auth/signin')
+        return
+      }
+
+      // Get Stripe price ID based on plan
+      const priceId = planId === 'pro'
+        ? process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID
+        : process.env.NEXT_PUBLIC_STRIPE_BUSINESS_PRICE_ID
+
+      if (!priceId) {
+        alert('Plan configuration error. Please contact support.')
+        return
+      }
+
+      // Create checkout session
+      const response = await fetch('/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ priceId }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to create checkout session')
+      }
+
+      const { url } = await response.json()
+
+      if (url) {
+        // Redirect to Stripe checkout
+        window.location.href = url
+      } else {
+        throw new Error('No checkout URL received')
+      }
     } catch (error) {
       console.error('Payment error:', error)
       alert('Payment processing failed. Please try again.')
