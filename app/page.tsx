@@ -17,6 +17,7 @@ export default function HomePage() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [toolsMenuOpen, setToolsMenuOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [isDragging, setIsDragging] = useState(false)
   const [showToolSelection, setShowToolSelection] = useState(false)
@@ -123,26 +124,26 @@ export default function HomePage() {
       <nav className="sticky top-0 z-50 top-nav">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-white">
-              Doc<span className="text-neon-cyan">Ops</span>Cloud
+            <Link href="/" className="text-2xl font-bold text-slate-900">
+              Doc<span className="text-gradient">Ops</span>Cloud
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-6">
+            <div className="hidden lg:flex items-center gap-4">
               {/* Search Bar */}
               <div ref={searchRef} className="relative">
-                <div className={`flex items-center glass-strong border rounded-full transition-all ${searchOpen ? 'w-80 border-[#00d4ff]' : 'w-48 border-[rgba(255,255,255,0.2)]'}`}>
-                  <Search className="w-5 h-5 text-gray-400 ml-4" />
+                <div className={`flex items-center glass-strong border rounded-full transition-all ${searchOpen ? 'w-80 border-blue-500' : 'w-48 border-slate-200'}`}>
+                  <Search className="w-5 h-5 text-slate-400 ml-4" />
                   <input
                     type="text"
                     placeholder="Search tools..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => setSearchOpen(true)}
-                    className="w-full bg-transparent text-white placeholder-gray-400 px-3 py-2 text-sm focus:outline-none"
+                    className="w-full bg-transparent text-slate-900 placeholder-slate-400 px-3 py-2 text-sm focus:outline-none"
                   />
                   {searchQuery && (
-                    <button onClick={() => setSearchQuery('')} className="mr-3 text-gray-400 hover:text-white">
+                    <button onClick={() => setSearchQuery('')} className="mr-3 text-slate-400 hover:text-slate-900">
                       <X className="w-4 h-4" />
                     </button>
                   )}
@@ -150,30 +151,147 @@ export default function HomePage() {
 
                 {/* Search Results Dropdown */}
                 {searchOpen && filteredTools.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-[#141420] border-2 border-[rgba(0,212,255,0.3)] rounded-xl overflow-hidden shadow-2xl z-50 max-h-96 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-blue-200 rounded-xl overflow-hidden shadow-2xl z-50 max-h-96 overflow-y-auto">
                     {filteredTools.map((tool) => (
                       <Link
                         key={tool.id}
                         href={user ? `/dashboard/tools/${tool.id}` : `/tools/${tool.id}`}
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(0,212,255,0.2)] transition border-b border-[rgba(255,255,255,0.1)] last:border-0 cursor-pointer"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition border-b border-slate-100 last:border-0 cursor-pointer"
                         onClick={() => setSearchOpen(false)}
                       >
                         <span className="text-2xl">{tool.icon}</span>
                         <div className="flex-1">
-                          <div className="text-white font-semibold text-sm">{tool.name}</div>
-                          <div className="text-gray-300 text-xs">{tool.description}</div>
+                          <div className="text-slate-900 font-semibold text-sm">{tool.name}</div>
+                          <div className="text-slate-600 text-xs">{tool.description}</div>
                         </div>
-                        <ArrowRight className="w-4 h-4 text-[#00d4ff] opacity-0 group-hover:opacity-100 transition" />
+                        <ArrowRight className="w-4 h-4 text-blue-500 opacity-0 group-hover:opacity-100 transition" />
                       </Link>
                     ))}
                   </div>
                 )}
               </div>
 
-              <a href="#tools" className="top-nav-link">Browse Tools</a>
-              <Link href="#features" className="top-nav-link">Features</Link>
+              {/* PDF Dropdown */}
+              <div className="relative" onMouseEnter={() => setActiveDropdown('pdf')} onMouseLeave={() => setActiveDropdown(null)}>
+                <button className="top-nav-link flex items-center gap-1">
+                  📄 PDF <ChevronDown className="w-4 h-4" />
+                </button>
+                {activeDropdown === 'pdf' && (
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-white border-2 border-blue-200 rounded-xl shadow-2xl z-50 p-3 max-h-96 overflow-y-auto">
+                    <div className="grid gap-1">
+                      {allTools.filter(t => t.id.startsWith('pdf-')).slice(0, 10).map((tool) => (
+                        <Link
+                          key={tool.id}
+                          href={user ? `/dashboard/tools/${tool.id}` : `/tools/${tool.id}`}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-50 transition"
+                        >
+                          <span className="text-lg">{tool.icon}</span>
+                          <span className="text-sm text-slate-900 font-medium">{tool.name}</span>
+                        </Link>
+                      ))}
+                      <Link href="/tools" className="text-xs text-blue-600 hover:underline px-3 py-2 mt-1">View all PDF tools →</Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Images Dropdown */}
+              <div className="relative" onMouseEnter={() => setActiveDropdown('image')} onMouseLeave={() => setActiveDropdown(null)}>
+                <button className="top-nav-link flex items-center gap-1">
+                  🖼️ Images <ChevronDown className="w-4 h-4" />
+                </button>
+                {activeDropdown === 'image' && (
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-white border-2 border-blue-200 rounded-xl shadow-2xl z-50 p-3 max-h-96 overflow-y-auto">
+                    <div className="grid gap-1">
+                      {allTools.filter(t => t.id.startsWith('image-')).slice(0, 10).map((tool) => (
+                        <Link
+                          key={tool.id}
+                          href={user ? `/dashboard/tools/${tool.id}` : `/tools/${tool.id}`}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-50 transition"
+                        >
+                          <span className="text-lg">{tool.icon}</span>
+                          <span className="text-sm text-slate-900 font-medium">{tool.name}</span>
+                        </Link>
+                      ))}
+                      <Link href="/tools" className="text-xs text-blue-600 hover:underline px-3 py-2 mt-1">View all image tools →</Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Video Dropdown */}
+              <div className="relative" onMouseEnter={() => setActiveDropdown('video')} onMouseLeave={() => setActiveDropdown(null)}>
+                <button className="top-nav-link flex items-center gap-1">
+                  🎥 Video <ChevronDown className="w-4 h-4" />
+                </button>
+                {activeDropdown === 'video' && (
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-white border-2 border-blue-200 rounded-xl shadow-2xl z-50 p-3 max-h-96 overflow-y-auto">
+                    <div className="grid gap-1">
+                      {allTools.filter(t => t.id.startsWith('video-')).slice(0, 10).map((tool) => (
+                        <Link
+                          key={tool.id}
+                          href={user ? `/dashboard/tools/${tool.id}` : `/tools/${tool.id}`}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-50 transition"
+                        >
+                          <span className="text-lg">{tool.icon}</span>
+                          <span className="text-sm text-slate-900 font-medium">{tool.name}</span>
+                        </Link>
+                      ))}
+                      <Link href="/tools" className="text-xs text-blue-600 hover:underline px-3 py-2 mt-1">View all video tools →</Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Audio Dropdown */}
+              <div className="relative" onMouseEnter={() => setActiveDropdown('audio')} onMouseLeave={() => setActiveDropdown(null)}>
+                <button className="top-nav-link flex items-center gap-1">
+                  🎵 Audio <ChevronDown className="w-4 h-4" />
+                </button>
+                {activeDropdown === 'audio' && (
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-white border-2 border-blue-200 rounded-xl shadow-2xl z-50 p-3 max-h-96 overflow-y-auto">
+                    <div className="grid gap-1">
+                      {allTools.filter(t => t.id.startsWith('audio-')).slice(0, 10).map((tool) => (
+                        <Link
+                          key={tool.id}
+                          href={user ? `/dashboard/tools/${tool.id}` : `/tools/${tool.id}`}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-50 transition"
+                        >
+                          <span className="text-lg">{tool.icon}</span>
+                          <span className="text-sm text-slate-900 font-medium">{tool.name}</span>
+                        </Link>
+                      ))}
+                      <Link href="/tools" className="text-xs text-blue-600 hover:underline px-3 py-2 mt-1">View all audio tools →</Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Utilities Dropdown */}
+              <div className="relative" onMouseEnter={() => setActiveDropdown('utility')} onMouseLeave={() => setActiveDropdown(null)}>
+                <button className="top-nav-link flex items-center gap-1">
+                  🔧 Utilities <ChevronDown className="w-4 h-4" />
+                </button>
+                {activeDropdown === 'utility' && (
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-white border-2 border-blue-200 rounded-xl shadow-2xl z-50 p-3 max-h-96 overflow-y-auto">
+                    <div className="grid gap-1">
+                      {allTools.filter(t => ['text-analyzer', 'hash-generator', 'qr-generator', 'json-formatter', 'password-generator', 'uuid-generator', 'base64-encode', 'url-encoder'].includes(t.id)).map((tool) => (
+                        <Link
+                          key={tool.id}
+                          href={user ? `/dashboard/tools/${tool.id}` : `/tools/${tool.id}`}
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-blue-50 transition"
+                        >
+                          <span className="text-lg">{tool.icon}</span>
+                          <span className="text-sm text-slate-900 font-medium">{tool.name}</span>
+                        </Link>
+                      ))}
+                      <Link href="/tools" className="text-xs text-blue-600 hover:underline px-3 py-2 mt-1">View all utilities →</Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <Link href="#pricing" className="top-nav-link">Pricing</Link>
-              <Link href="/dashboard" className="top-nav-link">Dashboard</Link>
             </div>
 
             <div className="flex items-center gap-3">
