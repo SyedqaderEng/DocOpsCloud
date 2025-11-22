@@ -20,6 +20,11 @@ import {
   Award,
   Settings,
   CreditCard,
+  RefreshCw,
+  Upload,
+  Layers,
+  History,
+  Sparkles,
 } from 'lucide-react'
 
 interface UserProfile {
@@ -55,8 +60,11 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const [collapsedCategories, setCollapsedCategories] = useState<string[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [loading, setLoading] = useState(true)
+  const [contentRefreshing, setContentRefreshing] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
+  const mainContentRef = useRef<HTMLDivElement>(null)
   const allTools = getAllToolsFlat()
 
   // Filter tools based on search
@@ -146,6 +154,41 @@ export default function DashboardPage() {
     )
   }
 
+  const handleCategorySelect = (categoryId: string) => {
+    // Trigger refresh animation
+    setContentRefreshing(true)
+
+    // Update selected category
+    setSelectedCategory(categoryId)
+
+    // Expand the selected category automatically
+    if (categoryId !== 'all') {
+      setCollapsedCategories(prev => prev.filter(id => id !== categoryId))
+    }
+
+    // Scroll main content to top for better UX
+    if (mainContentRef.current) {
+      mainContentRef.current.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+
+    // Remove refresh animation after a short delay
+    setTimeout(() => setContentRefreshing(false), 300)
+  }
+
+  // Get tools based on selected category
+  const getDisplayTools = () => {
+    if (selectedCategory === 'all') {
+      return allTools
+    }
+    const categoryData = ALL_TOOLS[selectedCategory as keyof typeof ALL_TOOLS]
+    return categoryData?.tools || []
+  }
+
+  const displayTools = getDisplayTools()
+  const selectedCategoryData = selectedCategory === 'all'
+    ? { name: 'All Tools', icon: '📚', id: 'all' }
+    : TOOL_CATEGORIES.find(cat => cat.id === selectedCategory)
+
   const handleLogout = async () => {
     await logout()
     router.push('/')
@@ -183,51 +226,103 @@ export default function DashboardPage() {
         <div className="flex-1 overflow-y-auto p-4">
           <div className="text-xs font-bold text-slate-500 uppercase mb-3 px-2">Tool Categories</div>
 
+          {/* All Tools Option */}
+          <div className="mb-3">
+            <button
+              onClick={() => handleCategorySelect('all')}
+              className={`w-full flex items-center justify-between p-3 rounded-lg transition text-left group ${
+                selectedCategory === 'all'
+                  ? 'bg-gradient-to-r from-[rgba(0,212,255,0.2)] to-[rgba(168,85,247,0.2)] border-2 border-[#00d4ff]'
+                  : 'hover:bg-[rgba(0,212,255,0.1)] border-2 border-transparent'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📚</span>
+                <div>
+                  <div className={`font-semibold text-sm ${selectedCategory === 'all' ? 'text-[#00d4ff]' : 'text-white'}`}>
+                    All Tools
+                  </div>
+                  <div className="text-xs text-gray-400">{allTools.length} tools</div>
+                </div>
+              </div>
+              {selectedCategory === 'all' && (
+                <div className="w-2 h-2 bg-[#00d4ff] rounded-full animate-pulse" />
+              )}
+            </button>
+          </div>
+
+          <div className="border-t border-[rgba(255,255,255,0.1)] pt-3 mb-3" />
+
           {TOOL_CATEGORIES.map((category) => {
             const isCollapsed = collapsedCategories.includes(category.id)
+            const isSelected = selectedCategory === category.id
             const categoryTools = ALL_TOOLS[category.id as keyof typeof ALL_TOOLS]?.tools || []
 
             return (
               <div key={category.id} className="mb-2">
-                <button
-                  onClick={() => toggleCategory(category.id)}
-                  className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-blue-50 transition text-left group"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{category.icon}</span>
-                    <div>
-                      <div className="text-slate-900 font-semibold text-sm">{category.name}</div>
-                      <div className="text-xs text-slate-500">{categoryTools.length} tools</div>
+                <div className={`rounded-lg overflow-hidden border-2 transition ${
+                  isSelected
+                    ? 'border-[#00d4ff] bg-gradient-to-r from-[rgba(0,212,255,0.1)] to-[rgba(168,85,247,0.1)]'
+                    : 'border-transparent'
+                }`}>
+                  <button
+                    onClick={() => handleCategorySelect(category.id)}
+                    className={`w-full flex items-center justify-between p-3 transition text-left group ${
+                      !isSelected && 'hover:bg-[rgba(0,212,255,0.1)]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 flex-1">
+                      <span className="text-2xl">{category.icon}</span>
+                      <div className="flex-1">
+                        <div className={`font-semibold text-sm ${isSelected ? 'text-[#00d4ff]' : 'text-white'}`}>
+                          {category.name}
+                        </div>
+                        <div className="text-xs text-gray-400">{categoryTools.length} tools</div>
+                      </div>
                     </div>
-                  </div>
-                  {isCollapsed ? (
-                    <ChevronDown className="w-4 h-4 text-slate-500" />
-                  ) : (
-                    <ChevronUp className="w-4 h-4 text-slate-500" />
-                  )}
-                </button>
+                    <div className="flex items-center gap-2">
+                      {isSelected && (
+                        <div className="w-2 h-2 bg-[#00d4ff] rounded-full animate-pulse" />
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleCategory(category.id)
+                        }}
+                        className="p-1 hover:bg-[rgba(255,255,255,0.1)] rounded transition"
+                      >
+                        {isCollapsed ? (
+                          <ChevronDown className="w-4 h-4 text-gray-400" />
+                        ) : (
+                          <ChevronUp className="w-4 h-4 text-gray-400" />
+                        )}
+                      </button>
+                    </div>
+                  </button>
 
-                {!isCollapsed && (
-                  <div className="ml-4 mt-1 space-y-1">
-                    {categoryTools.slice(0, 5).map((tool) => (
-                      <Link
-                        key={tool.id}
-                        href={`/dashboard/tools/${tool.id}`}
-                        className="block p-2 pl-10 rounded text-sm text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition"
-                      >
-                        {tool.name}
-                      </Link>
-                    ))}
-                    {categoryTools.length > 5 && (
-                      <Link
-                        href="#"
-                        className="block p-2 pl-10 rounded text-xs text-blue-600 hover:underline"
-                      >
-                        View all {categoryTools.length} →
-                      </Link>
-                    )}
-                  </div>
-                )}
+                  {!isCollapsed && (
+                    <div className="px-4 pb-3 space-y-1 bg-[rgba(0,0,0,0.2)]">
+                      {categoryTools.slice(0, 5).map((tool) => (
+                        <Link
+                          key={tool.id}
+                          href={`/dashboard/tools/${tool.id}`}
+                          className="block p-2 pl-10 rounded text-sm text-gray-300 hover:text-[#00d4ff] hover:bg-[rgba(0,212,255,0.1)] transition"
+                        >
+                          <span className="mr-2">{tool.icon}</span>
+                          {tool.name}
+                        </Link>
+                      ))}
+                      {categoryTools.length > 5 && (
+                        <button
+                          onClick={() => handleCategorySelect(category.id)}
+                          className="block w-full p-2 pl-10 rounded text-xs text-[#00d4ff] hover:underline text-left hover:bg-[rgba(0,212,255,0.05)] transition"
+                        >
+                          View all {categoryTools.length} →
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             )
           })}
@@ -304,7 +399,7 @@ export default function DashboardPage() {
         </header>
 
         {/* Main Content Area */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div ref={mainContentRef} className="flex-1 overflow-y-auto p-6">
           {/* Welcome & Usage Banner */}
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome back, {user.displayName || 'User'}! 👋</h1>
@@ -341,6 +436,69 @@ export default function DashboardPage() {
               )}
             </div>
           )}
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <Link
+              href="/dashboard/workflow/upload"
+              className="glass-card hover:border-[#00d4ff] group transition-all"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#00d4ff] to-[#a855f7] rounded-lg flex items-center justify-center">
+                  <Upload className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-white font-semibold mb-1 group-hover:text-[#00d4ff] transition">
+                    Upload & Process
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    Upload first, then choose tool
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-[#00d4ff] group-hover:translate-x-1 transition-all" />
+              </div>
+            </Link>
+
+            <Link
+              href="/dashboard/bulk"
+              className="glass-card hover:border-[#00d4ff] group transition-all"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#00ff88] to-[#00d4ff] rounded-lg flex items-center justify-center">
+                  <Layers className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-white font-semibold mb-1 group-hover:text-[#00d4ff] transition">
+                    Bulk Processing
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    Process multiple files at once
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-[#00d4ff] group-hover:translate-x-1 transition-all" />
+              </div>
+            </Link>
+
+            <Link
+              href="/dashboard/history"
+              className="glass-card hover:border-[#00d4ff] group transition-all"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#a855f7] to-[#ff00ff] rounded-lg flex items-center justify-center">
+                  <History className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-white font-semibold mb-1 group-hover:text-[#00d4ff] transition">
+                    Processing History
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    View past jobs and downloads
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-[#00d4ff] group-hover:translate-x-1 transition-all" />
+              </div>
+            </Link>
+          </div>
 
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -381,22 +539,85 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Popular Tools */}
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 mb-4">Popular Tools</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {allTools.slice(0, 6).map((tool) => (
-                <Link
-                  key={tool.id}
-                  href={`/dashboard/tools/${tool.id}`}
-                  className="glass-card hover:border-blue-500 group"
-                >
-                  <span className="text-4xl mb-3 block">{tool.icon}</span>
-                  <h3 className="text-slate-900 font-semibold mb-1 group-hover:text-blue-600 transition">{tool.name}</h3>
-                  <p className="text-sm text-slate-600 line-clamp-2">{tool.description}</p>
-                </Link>
-              ))}
+          {/* Category Showcase */}
+          <div className={`transition-opacity duration-300 ${contentRefreshing ? 'opacity-50' : 'opacity-100'}`}>
+            {/* Category Header */}
+            <div className="mb-6 glass-card border-2 border-[#00d4ff] transition-all duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#00d4ff] to-[#a855f7] rounded-xl flex items-center justify-center text-4xl shadow-lg shadow-[#00d4ff]/50">
+                    {selectedCategoryData?.icon}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-2xl font-bold text-white">{selectedCategoryData?.name}</h2>
+                      {contentRefreshing && (
+                        <RefreshCw className="w-5 h-5 text-[#00d4ff] animate-spin" />
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-300 mt-1">
+                      {displayTools.length} {displayTools.length === 1 ? 'tool' : 'tools'} available
+                      {selectedCategory !== 'all' && ' in this category'}
+                    </p>
+                  </div>
+                </div>
+                {selectedCategory !== 'all' && (
+                  <button
+                    onClick={() => handleCategorySelect('all')}
+                    className="px-4 py-2 glass hover:glass-strong rounded-lg transition text-sm text-white flex items-center gap-2"
+                  >
+                    View All Categories
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Subcategories Pills - Show if specific category is selected */}
+              {selectedCategory !== 'all' && selectedCategoryData && 'subcategories' in selectedCategoryData && (
+                <div className="border-t border-[rgba(255,255,255,0.1)] pt-4">
+                  <div className="text-xs font-semibold text-gray-400 uppercase mb-2">Quick Filters</div>
+                  <div className="flex flex-wrap gap-2">
+                    {(selectedCategoryData as any).subcategories?.map((subcat: any, index: number) => (
+                      <div
+                        key={index}
+                        className="px-3 py-1 glass-strong border border-[rgba(0,212,255,0.3)] rounded-full text-xs text-gray-300 hover:text-[#00d4ff] hover:border-[#00d4ff] transition cursor-pointer"
+                      >
+                        {subcat.name} ({subcat.tools?.length || 0})
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Tools Grid */}
+            {displayTools.length > 0 ? (
+              <div
+                key={selectedCategory}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-in fade-in duration-300"
+              >
+                {displayTools.map((tool) => (
+                  <Link
+                    key={tool.id}
+                    href={`/dashboard/tools/${tool.id}`}
+                    className="glass-card hover:border-[#00d4ff] group transition-all hover:scale-105"
+                  >
+                    <span className="text-4xl mb-3 block">{tool.icon}</span>
+                    <h3 className="text-white font-semibold mb-1 group-hover:text-[#00d4ff] transition">{tool.name}</h3>
+                    <p className="text-sm text-gray-400 line-clamp-2">{tool.description}</p>
+                    <div className="mt-3 flex items-center text-xs text-[#00d4ff]">
+                      <span>Try now</span>
+                      <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 glass-card">
+                <div className="text-6xl mb-4">🔍</div>
+                <p className="text-gray-300">No tools found in this category</p>
+              </div>
+            )}
           </div>
         </div>
       </main>

@@ -4,7 +4,7 @@ import { useState, useEffect, use } from 'react'
 import { useAuth } from '@/lib/firebase/AuthContext'
 import { useRouter } from 'next/navigation'
 import { getAllToolsFlat } from '@/lib/tools-data'
-import { ArrowLeft, Upload, X, Loader2, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Upload, X, Loader2, AlertCircle, RefreshCw, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import UpgradePrompt from '@/components/modals/UpgradePrompt'
 import { validateFileSize, formatFileSize } from '@/lib/utils/file-validation'
@@ -22,6 +22,7 @@ export default function DashboardToolPage({ params }: PageProps) {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [processingFailed, setProcessingFailed] = useState(false)
   const [userTier, setUserTier] = useState<SubscriptionTier>('FREE')
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [upgradeReason, setUpgradeReason] = useState('')
@@ -135,6 +136,7 @@ export default function DashboardToolPage({ params }: PageProps) {
 
     setUploadedFiles(prev => [...prev, ...files])
     setError(null)
+    setProcessingFailed(false) // Clear failed state when new files are added
   }
 
   const removeFile = (index: number) => {
@@ -149,6 +151,7 @@ export default function DashboardToolPage({ params }: PageProps) {
 
     setProcessing(true)
     setError(null)
+    setProcessingFailed(false) // Clear failed state on new attempt
 
     try {
       const idToken = await user?.getIdToken()
@@ -198,12 +201,23 @@ export default function DashboardToolPage({ params }: PageProps) {
         setUsageInfo(usage)
       }
 
+      // Only clear files on success
       setUploadedFiles([])
+      setProcessingFailed(false)
     } catch (err: any) {
+      // Preserve uploaded files when processing fails
       setError(err.message || 'Processing failed')
+      setProcessingFailed(true) // Mark that processing failed
     } finally {
       setProcessing(false)
     }
+  }
+
+  const handleRetry = () => {
+    // Clear error state and retry processing with same files
+    setError(null)
+    setProcessingFailed(false)
+    handleProcess()
   }
 
   if (!tool) {
@@ -296,29 +310,75 @@ export default function DashboardToolPage({ params }: PageProps) {
             </div>
           )}
 
-          {/* Error Display */}
-          {error && (
+          {/* Error Display with Preserved Files Notice */}
+          {error && processingFailed && (
+            <div className="mt-4 space-y-3">
+              <div className="p-4 bg-[rgba(255,0,85,0.1)] border-2 border-[#ff0055] rounded-lg">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-[#ff0055] flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-red-300 mb-1">Processing Failed</p>
+                    <p className="text-sm text-red-200">{error}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Files Preserved Notice */}
+              <div className="p-3 bg-[rgba(0,212,255,0.1)] border border-[#00d4ff] rounded-lg flex items-start gap-2">
+                <CheckCircle className="w-5 h-5 text-[#00d4ff] flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-[#00d4ff]">
+                  Your {uploadedFiles.length} file{uploadedFiles.length !== 1 ? 's are' : ' is'} still loaded and ready to process
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Regular Error Display (for validation errors) */}
+          {error && !processingFailed && (
             <div className="mt-4 p-3 bg-[rgba(255,0,85,0.1)] border border-[#ff0055] rounded-lg flex items-start gap-2">
               <AlertCircle className="w-5 h-5 text-[#ff0055] flex-shrink-0 mt-0.5" />
               <p className="text-sm text-red-300">{error}</p>
             </div>
           )}
 
-          {/* Process Button */}
-          <button
-            onClick={handleProcess}
-            disabled={processing || uploadedFiles.length === 0}
-            className="w-full mt-4 btn-neon py-3 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {processing ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              `Process ${uploadedFiles.length} file${uploadedFiles.length !== 1 ? 's' : ''}`
-            )}
-          </button>
+          {/* Retry Button (shown when processing failed) */}
+          {processingFailed && uploadedFiles.length > 0 && (
+            <button
+              onClick={handleRetry}
+              disabled={processing}
+              className="w-full mt-4 bg-gradient-to-r from-[#ff0055] to-[#ff4500] hover:from-[#ff1166] hover:to-[#ff5511] text-white font-bold py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-[#ff0055]/30 transition-all"
+            >
+              {processing ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Retrying...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-5 h-5" />
+                  Try Again
+                </>
+              )}
+            </button>
+          )}
+
+          {/* Process Button (shown normally) */}
+          {!processingFailed && (
+            <button
+              onClick={handleProcess}
+              disabled={processing || uploadedFiles.length === 0}
+              className="w-full mt-4 btn-neon py-3 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {processing ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                `Process ${uploadedFiles.length} file${uploadedFiles.length !== 1 ? 's' : ''}`
+              )}
+            </button>
+          )}
         </div>
 
         {/* Instructions Section */}
