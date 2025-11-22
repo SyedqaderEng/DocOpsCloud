@@ -180,8 +180,8 @@ export default function DashboardPage() {
 }
 
 function NavItem({ icon, label, active, onClick, href }: { icon: string; label: string; active?: boolean; onClick?: () => void; href?: string }) {
-  const className = `flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm font-medium transition ${
-    active ? 'glass-strong border border-[#00d4ff] text-[#00d4ff]' : 'text-gray-300 hover:glass hover:text-white'
+  const className = `sidebar-nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm transition ${
+    active ? 'active glass-strong border border-[#00d4ff]' : 'hover:glass'
   }`
 
   if (href) {

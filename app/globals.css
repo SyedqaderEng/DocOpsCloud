@@ -173,6 +173,62 @@
     background: rgba(255, 255, 255, 0.08);
   }
 
+  /* ===== NAVIGATION MENU STYLING ===== */
+
+  .nav-menu-item {
+    @apply transition-all duration-200;
+    color: rgba(255, 255, 255, 0.9) !important;
+    opacity: 1 !important;
+  }
+
+  .nav-menu-item:hover {
+    color: var(--neon-cyan) !important;
+    background: rgba(0, 212, 255, 0.1);
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+  }
+
+  .nav-menu-item.active {
+    color: var(--neon-cyan) !important;
+    background: rgba(0, 212, 255, 0.15);
+    border-color: var(--neon-cyan) !important;
+    font-weight: 600;
+  }
+
+  /* Sidebar Navigation Items */
+  .sidebar-nav-item {
+    @apply text-white opacity-100 font-medium;
+    transition: all 0.2s ease;
+  }
+
+  .sidebar-nav-item:hover {
+    @apply text-[#00d4ff];
+    background: rgba(0, 212, 255, 0.1);
+  }
+
+  .sidebar-nav-item.active {
+    @apply text-[#00d4ff] font-semibold;
+    background: rgba(0, 212, 255, 0.15);
+    border-left: 3px solid var(--neon-cyan);
+  }
+
+  /* Top Navigation Bar */
+  .top-nav {
+    background: rgba(10, 10, 10, 0.95) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  .top-nav-link {
+    color: rgba(255, 255, 255, 0.95) !important;
+    font-weight: 500;
+    opacity: 1 !important;
+  }
+
+  .top-nav-link:hover {
+    color: var(--neon-cyan) !important;
+  }
+
   /* ===== SCROLLBAR STYLING ===== */
 }
 
