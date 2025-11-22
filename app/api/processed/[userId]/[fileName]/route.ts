@@ -6,8 +6,8 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 /**
- * GET /api/files/[userId]/[fileName]
- * Download processed files
+ * GET /api/processed/[userId]/[fileName]
+ * Download processed files from temp storage
  */
 export async function GET(
   req: NextRequest,

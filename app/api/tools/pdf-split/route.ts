@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
       const filePath = join(outputDir, fileName)
       await writeFile(filePath, pdfBytes)
 
-      downloadUrls.push(`/api/files/${decodedToken.uid}/${fileName}`)
+      downloadUrls.push(`/api/processed/${decodedToken.uid}/${fileName}`)
     }
 
     // 6. RETURN DOWNLOAD URLs
