@@ -52,21 +52,25 @@ export default function HomePage() {
     setIsDragging(false)
   }, [])
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
     const files = Array.from(e.dataTransfer.files)
     if (files.length > 0) {
-      setUploadedFiles(prev => [...prev, ...files].slice(0, 5))
-      setShowToolSelection(true)
+      // Immediately store files and redirect to tool selection
+      const { fileTransferManager } = await import('@/lib/utils/file-transfer')
+      const transferId = await fileTransferManager.storeFiles(files)
+      router.push(`/select-tool?transfer=${transferId}`)
     }
-  }, [])
+  }, [router])
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (files.length > 0) {
-      setUploadedFiles(prev => [...prev, ...files].slice(0, 5))
-      setShowToolSelection(true)
+      // Immediately store files and redirect to tool selection
+      const { fileTransferManager } = await import('@/lib/utils/file-transfer')
+      const transferId = await fileTransferManager.storeFiles(files)
+      router.push(`/select-tool?transfer=${transferId}`)
     }
   }
 
@@ -111,7 +115,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen gradient-animated">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 glass border-b border-[rgba(255,255,255,0.1)]">
+      <nav className="sticky top-0 z-50 top-nav">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="text-2xl font-bold text-white">
@@ -207,17 +211,17 @@ export default function HomePage() {
                 )}
               </div>
 
-              <Link href="/tools" className="text-gray-300 hover:text-[#00d4ff] transition font-medium">All Tools</Link>
-              <Link href="#features" className="text-gray-300 hover:text-[#00d4ff] transition font-medium">Features</Link>
-              <Link href="#pricing" className="text-gray-300 hover:text-[#00d4ff] transition font-medium">Pricing</Link>
-              <Link href="/dashboard" className="text-gray-300 hover:text-[#00d4ff] transition font-medium">Dashboard</Link>
+              <Link href="/tools" className="top-nav-link">All Tools</Link>
+              <Link href="#features" className="top-nav-link">Features</Link>
+              <Link href="#pricing" className="top-nav-link">Pricing</Link>
+              <Link href="/dashboard" className="top-nav-link">Dashboard</Link>
             </div>
 
             <div className="flex items-center gap-3">
               <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden text-gray-300 hover:text-white p-2">
                 <Menu className="w-6 h-6" />
               </button>
-              <Link href="/auth/signin" className="hidden sm:block px-5 py-2.5 text-gray-200 hover:text-[#00d4ff] transition font-semibold">Sign In</Link>
+              <Link href="/auth/signin" className="hidden sm:block px-5 py-2.5 top-nav-link font-semibold">Sign In</Link>
               <Link href="/auth/signup" className="btn-neon">Start Free</Link>
             </div>
           </div>

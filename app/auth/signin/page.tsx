@@ -14,6 +14,12 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [localError, setLocalError] = useState('')
 
+  const getRedirectUrl = () => {
+    const redirectUrl = sessionStorage.getItem('redirectAfterLogin')
+    sessionStorage.removeItem('redirectAfterLogin')
+    return redirectUrl || '/dashboard'
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLocalError('')
@@ -26,7 +32,7 @@ export default function SignInPage() {
 
     try {
       await signIn(email, password)
-      router.push('/dashboard')
+      router.push(getRedirectUrl())
     } catch {
       // Error handled by context
     }
@@ -35,7 +41,7 @@ export default function SignInPage() {
   const handleGoogleSignIn = async () => {
     try {
       await signInGoogle()
-      router.push('/dashboard')
+      router.push(getRedirectUrl())
     } catch {
       // Error handled by context
     }
@@ -44,7 +50,7 @@ export default function SignInPage() {
   const handleGithubSignIn = async () => {
     try {
       await signInGithub()
-      router.push('/dashboard')
+      router.push(getRedirectUrl())
     } catch {
       // Error handled by context
     }
