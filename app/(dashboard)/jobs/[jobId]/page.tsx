@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/firebase/AuthContext'
 import { Loader2, Download, FileText, CheckCircle2, XCircle, Clock, Activity, Mail, ArrowLeft, ArrowRight, RefreshCw } from 'lucide-react'
+import ShareableLink from '@/components/workflow/ShareableLink'
 
 type JobStatus = 'queued' | 'processing' | 'completed' | 'failed'
 

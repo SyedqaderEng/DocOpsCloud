@@ -4,6 +4,7 @@ import { useState, useEffect, use, Suspense } from 'react'
 import { useAuth } from '@/lib/firebase/AuthContext'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, ArrowRight, Loader2, FileText, Scissors, Compress, Combine, RotateCw, Lock, FileEdit, Mail, Image as ImageIcon } from 'lucide-react'
+import UniversalToolbar from '@/components/workflow/UniversalToolbar'
 import Link from 'next/link'
 
 interface ToolOption {
