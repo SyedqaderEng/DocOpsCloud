@@ -197,7 +197,7 @@ export default function DashboardPage() {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen gradient-animated flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-[#00d4ff] animate-spin" />
+        <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
       </div>
     )
   }
@@ -214,17 +214,17 @@ export default function DashboardPage() {
   return (
     <div className="flex h-screen gradient-animated overflow-hidden">
       {/* LEFT SIDEBAR - Tool Categories */}
-      <aside className="w-72 glass-strong border-r border-[rgba(255,255,255,0.2)] flex flex-col overflow-hidden">
+      <aside className="w-72 glass-strong border-r border-slate-200 flex flex-col overflow-hidden">
         {/* Logo */}
-        <div className="p-5 border-b border-[rgba(255,255,255,0.2)]">
-          <Link href="/" className="text-2xl font-extrabold text-white">
+        <div className="p-5 border-b border-slate-200">
+          <Link href="/" className="text-2xl font-extrabold text-slate-900">
             Doc<span className="text-gradient">Ops</span>Cloud
           </Link>
         </div>
 
         {/* Tool Categories */}
         <div className="flex-1 overflow-y-auto p-4">
-          <div className="text-xs font-bold text-gray-400 uppercase mb-3 px-2">Tool Categories</div>
+          <div className="text-xs font-bold text-slate-500 uppercase mb-3 px-2">Tool Categories</div>
 
           {/* All Tools Option */}
           <div className="mb-3">
@@ -329,17 +329,17 @@ export default function DashboardPage() {
         </div>
 
         {/* User Profile */}
-        <div className="p-4 border-t border-[rgba(255,255,255,0.2)]">
-          <div className="flex items-center gap-3 p-3 glass-card border-[rgba(0,212,255,0.3)]">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#00d4ff] to-[#a855f7] rounded-full flex items-center justify-center text-white font-bold">
+        <div className="p-4 border-t border-slate-200">
+          <div className="flex items-center gap-3 p-3 glass-card border-blue-200">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
               {user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-white truncate">{user.displayName || 'User'}</div>
-              <div className="text-xs text-gray-400">{userTier}</div>
+              <div className="text-sm font-semibold text-slate-900 truncate">{user.displayName || 'User'}</div>
+              <div className="text-xs text-slate-500">{userTier}</div>
             </div>
-            <button onClick={handleLogout} className="p-2 hover:bg-[rgba(255,255,255,0.1)] rounded transition" title="Logout">
-              <LogOut className="w-4 h-4 text-gray-400" />
+            <button onClick={handleLogout} className="p-2 hover:bg-slate-100 rounded transition" title="Logout">
+              <LogOut className="w-4 h-4 text-slate-500" />
             </button>
           </div>
         </div>
@@ -348,7 +348,7 @@ export default function DashboardPage() {
       {/* MAIN CONTENT */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
-        <header className="glass-strong border-b border-[rgba(255,255,255,0.2)] px-6 py-4">
+        <header className="glass-strong border-b border-slate-200 px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Search */}
             <div className="flex-1 max-w-xl" ref={searchRef}>
@@ -359,25 +359,25 @@ export default function DashboardPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setSearchOpen(true)}
-                  className="w-full pl-10 pr-4 py-2 glass-strong border border-[rgba(255,255,255,0.2)] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#00d4ff]"
+                  className="input-glass w-full pl-10"
                 />
-                <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+                <span className="absolute left-3 top-2.5 text-slate-400">🔍</span>
 
                 {searchOpen && filteredTools.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-[#141420] border-2 border-[rgba(0,212,255,0.3)] rounded-xl overflow-hidden shadow-2xl z-50">
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-blue-200 rounded-xl overflow-hidden shadow-2xl z-50">
                     {filteredTools.map((tool) => (
                       <Link
                         key={tool.id}
                         href={`/dashboard/tools/${tool.id}`}
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(0,212,255,0.2)] transition border-b border-[rgba(255,255,255,0.1)] last:border-0"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition border-b border-slate-100 last:border-0"
                         onClick={() => setSearchOpen(false)}
                       >
                         <span className="text-2xl">{tool.icon}</span>
                         <div className="flex-1">
-                          <div className="text-white font-semibold text-sm">{tool.name}</div>
-                          <div className="text-gray-300 text-xs">{tool.description}</div>
+                          <div className="text-slate-900 font-semibold text-sm">{tool.name}</div>
+                          <div className="text-slate-600 text-xs">{tool.description}</div>
                         </div>
-                        <ArrowRight className="w-4 h-4 text-[#00d4ff]" />
+                        <ArrowRight className="w-4 h-4 text-blue-500" />
                       </Link>
                     ))}
                   </div>
@@ -387,11 +387,11 @@ export default function DashboardPage() {
 
             {/* Quick Actions */}
             <div className="flex items-center gap-3 ml-6">
-              <Link href="/pricing" className="flex items-center gap-2 px-4 py-2 glass hover:glass-strong rounded-lg transition text-sm text-white">
+              <Link href="/pricing" className="flex items-center gap-2 px-4 py-2 glass hover:glass-strong rounded-lg transition text-sm text-slate-900">
                 <CreditCard className="w-4 h-4" />
                 Pricing
               </Link>
-              <Link href="/settings" className="flex items-center gap-2 px-4 py-2 glass hover:glass-strong rounded-lg transition text-sm text-white">
+              <Link href="/settings" className="flex items-center gap-2 px-4 py-2 glass hover:glass-strong rounded-lg transition text-sm text-slate-900">
                 <Settings className="w-4 h-4" />
               </Link>
             </div>
@@ -402,34 +402,34 @@ export default function DashboardPage() {
         <div ref={mainContentRef} className="flex-1 overflow-y-auto p-6">
           {/* Welcome & Usage Banner */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-white mb-2">Welcome back, {user.displayName || 'User'}! 👋</h1>
-            <p className="text-gray-300">Ready to process your documents?</p>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome back, {user.displayName || 'User'}! 👋</h1>
+            <p className="text-slate-600">Ready to process your documents?</p>
           </div>
 
           {/* Usage Stats for FREE tier */}
           {userTier === 'FREE' && (
-            <div className="mb-6 glass-card border-2 border-[#00d4ff]">
+            <div className="mb-6 glass-card border-2 border-blue-500">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="font-bold text-white text-lg mb-1">Free Plan - Daily Limit</h3>
-                  <p className="text-sm text-gray-300">
-                    Today: <span className="text-white font-semibold">{dailyUsage} / {dailyLimit}</span> operations
+                  <h3 className="font-bold text-slate-900 text-lg mb-1">Free Plan - Daily Limit</h3>
+                  <p className="text-sm text-slate-600">
+                    Today: <span className="text-slate-900 font-semibold">{dailyUsage} / {dailyLimit}</span> operations
                     <span className="mx-2">•</span>
-                    This month: <span className="text-white font-semibold">{monthlyUsage} / {monthlyLimit}</span> operations
+                    This month: <span className="text-slate-900 font-semibold">{monthlyUsage} / {monthlyLimit}</span> operations
                   </p>
                 </div>
                 <Link href="/pricing" className="btn-neon px-6 py-2">
                   Upgrade to Pro
                 </Link>
               </div>
-              <div className="w-full glass rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-[#00d4ff] to-[#a855f7] h-3 transition-all duration-500"
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 transition-all duration-500"
                   style={{ width: `${Math.min(usagePercentage, 100)}%` }}
                 />
               </div>
               {usagePercentage > 80 && (
-                <div className="mt-3 text-sm text-yellow-400 flex items-center gap-2">
+                <div className="mt-3 text-sm text-yellow-600 flex items-center gap-2">
                   <Zap className="w-4 h-4" />
                   You're running low on operations! Upgrade for unlimited access.
                 </div>
@@ -502,38 +502,38 @@ export default function DashboardPage() {
 
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="glass-card hover:border-[#00d4ff] group">
+            <div className="glass-card hover:border-blue-500 group">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#00d4ff] to-[#a855f7] rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                   <FileText className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-white">{monthlyUsage}</div>
-                  <div className="text-sm text-gray-400">Operations This Month</div>
+                  <div className="text-2xl font-bold text-slate-900">{monthlyUsage}</div>
+                  <div className="text-sm text-slate-500">Operations This Month</div>
                 </div>
               </div>
             </div>
 
-            <div className="glass-card hover:border-[#00d4ff] group">
+            <div className="glass-card hover:border-blue-500 group">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#00ff88] to-[#00d4ff] rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
                   <TrendingUp className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-white">{dailyLimit - dailyUsage}</div>
-                  <div className="text-sm text-gray-400">Remaining Today</div>
+                  <div className="text-2xl font-bold text-slate-900">{dailyLimit - dailyUsage}</div>
+                  <div className="text-sm text-slate-500">Remaining Today</div>
                 </div>
               </div>
             </div>
 
-            <div className="glass-card hover:border-[#00d4ff] group">
+            <div className="glass-card hover:border-blue-500 group">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#a855f7] to-[#ff00ff] rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
                   <Award className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-gradient">{userTier}</div>
-                  <div className="text-sm text-gray-400">Current Plan</div>
+                  <div className="text-sm text-slate-500">Current Plan</div>
                 </div>
               </div>
             </div>

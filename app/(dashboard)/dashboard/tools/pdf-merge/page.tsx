@@ -118,7 +118,8 @@ export default function PDFMergeTool() {
     try {
       // Load PDF.js
       const pdfjsLib = await import('pdfjs-dist')
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+      // Use unpkg CDN for worker with correct .mjs extension for v5.x
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`
 
       const newPDFs: UploadedPDF[] = []
       let globalPageIndex = allPages.length
@@ -290,7 +291,7 @@ export default function PDFMergeTool() {
         <div className="mb-6">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 text-gray-300 hover:text-[#00d4ff] transition mb-4"
+            className="inline-flex items-center gap-2 text-slate-600 hover:text-blue-600 transition mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
@@ -299,24 +300,24 @@ export default function PDFMergeTool() {
           <div className="flex items-center gap-4 mb-4">
             <span className="text-5xl">🔗</span>
             <div>
-              <h1 className="text-3xl font-bold text-white">Merge PDFs</h1>
-              <p className="text-gray-300">Combine multiple PDF files into one document</p>
+              <h1 className="text-3xl font-bold text-slate-900">Merge PDFs</h1>
+              <p className="text-slate-600">Combine multiple PDF files into one document</p>
             </div>
           </div>
         </div>
 
         {/* Messages */}
         {error && (
-          <div className="mb-4 p-4 bg-[rgba(255,0,85,0.1)] border border-[#ff0055] rounded-lg flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-[#ff0055] flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-red-300">{error}</p>
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-red-700">{error}</p>
           </div>
         )}
 
         {success && (
-          <div className="mb-4 p-4 bg-[rgba(0,255,136,0.1)] border border-[#00ff88] rounded-lg flex items-start gap-2">
-            <CheckCircle className="w-5 h-5 text-[#00ff88] flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-green-300">{success}</p>
+          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2">
+            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-green-700">{success}</p>
           </div>
         )}
 
@@ -324,7 +325,7 @@ export default function PDFMergeTool() {
           {/* Left Panel - Upload */}
           <div className="lg:col-span-1">
             <div className="glass-card">
-              <h2 className="text-xl font-bold text-white mb-4">Upload PDFs</h2>
+              <h2 className="text-xl font-bold text-slate-900 mb-4">Upload PDFs</h2>
 
               <label className="block mb-4">
                 <input
@@ -335,34 +336,34 @@ export default function PDFMergeTool() {
                   className="hidden"
                   disabled={processing || loadingPreviews}
                 />
-                <div className="border-2 border-dashed border-[rgba(255,255,255,0.2)] rounded-xl p-8 text-center hover:border-[#00d4ff] transition cursor-pointer">
-                  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-white font-semibold mb-1">Upload PDF Files</p>
-                  <p className="text-sm text-gray-400">Multiple files allowed</p>
+                <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-blue-500 transition cursor-pointer bg-slate-50">
+                  <Upload className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+                  <p className="text-slate-900 font-semibold mb-1">Upload PDF Files</p>
+                  <p className="text-sm text-slate-500">Multiple files allowed</p>
                 </div>
               </label>
 
               {/* Uploaded Files List */}
               {uploadedPDFs.length > 0 && (
                 <div className="space-y-2">
-                  <h3 className="text-sm font-semibold text-gray-300 mb-2">
+                  <h3 className="text-sm font-semibold text-slate-700 mb-2">
                     Uploaded Files ({uploadedPDFs.length})
                   </h3>
                   {uploadedPDFs.map((pdf, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-[rgba(255,255,255,0.05)] rounded-lg">
+                    <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <FileText className="w-4 h-4 text-red-400 flex-shrink-0" />
+                        <FileText className="w-4 h-4 text-red-500 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm text-white font-medium truncate">{pdf.file.name}</div>
-                          <div className="text-xs text-gray-400">{pdf.pageCount} pages</div>
+                          <div className="text-sm text-slate-900 font-medium truncate">{pdf.file.name}</div>
+                          <div className="text-xs text-slate-500">{pdf.pageCount} pages</div>
                         </div>
                       </div>
                       <button
                         onClick={() => removeFile(index)}
-                        className="ml-2 p-1 hover:bg-[rgba(255,255,255,0.1)] rounded transition"
+                        className="ml-2 p-1 hover:bg-slate-200 rounded transition"
                         disabled={processing}
                       >
-                        <X className="w-4 h-4 text-gray-400" />
+                        <X className="w-4 h-4 text-slate-500" />
                       </button>
                     </div>
                   ))}
@@ -372,18 +373,18 @@ export default function PDFMergeTool() {
               {/* Stats */}
               {totalPages > 0 && (
                 <div className="mt-4 p-4 glass rounded-lg">
-                  <div className="text-sm text-gray-300">
+                  <div className="text-sm text-slate-600">
                     <div className="flex justify-between mb-1">
                       <span>Total Pages:</span>
-                      <span className="text-white font-semibold">{totalPages}</span>
+                      <span className="text-slate-900 font-semibold">{totalPages}</span>
                     </div>
                     <div className="flex justify-between mb-1">
                       <span>Selected:</span>
-                      <span className="text-[#00d4ff] font-semibold">{selectedCount}</span>
+                      <span className="text-blue-600 font-semibold">{selectedCount}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Will Merge:</span>
-                      <span className="text-[#00ff88] font-semibold">{selectedCount} pages</span>
+                      <span className="text-green-600 font-semibold">{selectedCount} pages</span>
                     </div>
                   </div>
                 </div>
@@ -419,7 +420,7 @@ export default function PDFMergeTool() {
                   </button>
                   <button
                     onClick={() => setShowEmailModal(true)}
-                    className="w-full glass-card hover:border-[#00d4ff] py-3 flex items-center justify-center gap-2"
+                    className="w-full glass-card hover:border-blue-500 py-3 flex items-center justify-center gap-2 text-slate-900"
                   >
                     <Mail className="w-5 h-5" />
                     Email to Me
@@ -432,20 +433,20 @@ export default function PDFMergeTool() {
           {/* Right Panel - Page Previews */}
           <div className="lg:col-span-2">
             <div className="glass-card">
-              <h2 className="text-xl font-bold text-white mb-4">
+              <h2 className="text-xl font-bold text-slate-900 mb-4">
                 Page Preview {totalPages > 0 && `(${selectedCount}/${totalPages} selected)`}
               </h2>
 
               {loadingPreviews && (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-8 h-8 text-[#00d4ff] animate-spin" />
-                  <span className="ml-3 text-gray-300">Loading previews...</span>
+                  <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                  <span className="ml-3 text-slate-600">Loading previews...</span>
                 </div>
               )}
 
               {!loadingPreviews && totalPages === 0 && (
-                <div className="text-center py-12 text-gray-400">
-                  <FileText className="w-16 h-16 mx-auto mb-4 opacity-20" />
+                <div className="text-center py-12 text-slate-400">
+                  <FileText className="w-16 h-16 mx-auto mb-4 opacity-30" />
                   <p>Upload PDF files to see page previews</p>
                 </div>
               )}
@@ -457,8 +458,8 @@ export default function PDFMergeTool() {
                       key={`${page.fileIndex}-${page.pageNumber}`}
                       className={`relative group cursor-pointer rounded-lg overflow-hidden border-2 transition ${
                         page.selected
-                          ? 'border-[#00d4ff] shadow-[0_0_15px_rgba(0,212,255,0.3)]'
-                          : 'border-[rgba(255,255,255,0.1)] opacity-50'
+                          ? 'border-blue-500 shadow-blue'
+                          : 'border-slate-200 opacity-50'
                       }`}
                       onClick={() => togglePageSelection(page.fileIndex, page.pageNumber)}
                     >
@@ -467,16 +468,16 @@ export default function PDFMergeTool() {
                         alt={`Page ${page.pageNumber}`}
                         className="w-full h-auto"
                       />
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition flex items-center justify-center">
+                      <div className="absolute inset-0 bg-slate-900 bg-opacity-0 group-hover:bg-opacity-10 transition flex items-center justify-center">
                         {page.selected && (
-                          <div className="absolute top-2 right-2 w-6 h-6 bg-[#00d4ff] rounded-full flex items-center justify-center">
+                          <div className="absolute top-2 right-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
                             <span className="text-white text-xs font-bold">✓</span>
                           </div>
                         )}
                       </div>
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-2">
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900 to-transparent p-2">
                         <p className="text-xs text-white truncate">{page.fileName}</p>
-                        <p className="text-xs text-gray-300">Page {page.pageNumber}</p>
+                        <p className="text-xs text-slate-200">Page {page.pageNumber}</p>
                       </div>
                     </div>
                   ))}
@@ -489,20 +490,20 @@ export default function PDFMergeTool() {
 
       {/* Email Modal */}
       {showEmailModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-slate-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="glass-card max-w-md w-full">
-            <h3 className="text-xl font-bold text-white mb-4">Email Merged PDF</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-4">Email Merged PDF</h3>
             <input
               type="email"
               value={emailAddress}
               onChange={(e) => setEmailAddress(e.target.value)}
               placeholder="Enter email address"
-              className="w-full px-4 py-2 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.2)] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#00d4ff]"
+              className="input-glass w-full"
             />
             <div className="flex gap-3 mt-4">
               <button
                 onClick={() => setShowEmailModal(false)}
-                className="flex-1 px-4 py-2 glass hover:border-[rgba(255,255,255,0.3)] rounded-lg text-gray-300"
+                className="flex-1 px-4 py-2 glass hover:border-slate-300 rounded-lg text-slate-700"
               >
                 Cancel
               </button>
