@@ -122,7 +122,13 @@ export default function DashboardPage() {
 
   const fetchActivity = async () => {
     try {
-      const response = await fetch('/api/dashboard/stats')
+      const idToken = await user?.getIdToken()
+      const headers: HeadersInit = {}
+      if (idToken) {
+        headers['Authorization'] = `Bearer ${idToken}`
+      }
+
+      const response = await fetch('/api/dashboard/stats', { headers })
       if (response.ok) {
         const data = await response.json()
         setActivity(data.recentActivity || [])
