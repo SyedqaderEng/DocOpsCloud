@@ -18,6 +18,7 @@ import {
   ChevronRight,
   Zap,
   FileText,
+  BarChart3,
 } from 'lucide-react'
 import { useAuth } from '@/lib/firebase/AuthContext'
 
@@ -81,6 +82,11 @@ export default function Sidebar() {
       name: 'All Tools',
       href: '/dashboard/tools',
       icon: Zap,
+    },
+    {
+      name: 'Analytics',
+      href: '/analytics',
+      icon: BarChart3,
     },
   ]
 
