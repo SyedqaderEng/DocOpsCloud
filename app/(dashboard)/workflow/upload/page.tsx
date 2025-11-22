@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useAuth } from '@/lib/firebase/AuthContext'
 import { useRouter } from 'next/navigation'
 import { Upload, FileText, X, Loader2, AlertCircle, CheckCircle, ArrowRight } from 'lucide-react'
 import { validateFileSize, formatFileSize } from '@/lib/utils/file-validation'
+import { analyzeFiles, FileAnalysis } from '@/lib/utils/file-analysis'
+import SmartSuggestions from '@/components/workflow/SmartSuggestions'
 import { SubscriptionTier } from '@prisma/client'
 import Link from 'next/link'
 
@@ -26,6 +28,19 @@ export default function WorkflowUploadPage() {
   const [dragActive, setDragActive] = useState(false)
   const [userTier, setUserTier] = useState<SubscriptionTier>('FREE')
   const [error, setError] = useState<string | null>(null)
+  const [fileAnalysis, setFileAnalysis] = useState<FileAnalysis | null>(null)
+
+  // Analyze files when they change
+  useEffect(() => {
+    if (files.length > 0) {
+      const justFiles = files.map(f => f.file)
+      analyzeFiles(justFiles).then(analysis => {
+        setFileAnalysis(analysis)
+      })
+    } else {
+      setFileAnalysis(null)
+    }
+  }, [files])
 
   // Fetch user tier on mount
   useState(() => {

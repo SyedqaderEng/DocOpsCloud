@@ -21,6 +21,10 @@ import {
   Settings,
   CreditCard,
   RefreshCw,
+  Upload,
+  Layers,
+  History,
+  Sparkles,
 } from 'lucide-react'
 
 interface UserProfile {
@@ -432,6 +436,69 @@ export default function DashboardPage() {
               )}
             </div>
           )}
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <Link
+              href="/dashboard/workflow/upload"
+              className="glass-card hover:border-[#00d4ff] group transition-all"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#00d4ff] to-[#a855f7] rounded-lg flex items-center justify-center">
+                  <Upload className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-white font-semibold mb-1 group-hover:text-[#00d4ff] transition">
+                    Upload & Process
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    Upload first, then choose tool
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-[#00d4ff] group-hover:translate-x-1 transition-all" />
+              </div>
+            </Link>
+
+            <Link
+              href="/dashboard/bulk"
+              className="glass-card hover:border-[#00d4ff] group transition-all"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#00ff88] to-[#00d4ff] rounded-lg flex items-center justify-center">
+                  <Layers className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-white font-semibold mb-1 group-hover:text-[#00d4ff] transition">
+                    Bulk Processing
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    Process multiple files at once
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-[#00d4ff] group-hover:translate-x-1 transition-all" />
+              </div>
+            </Link>
+
+            <Link
+              href="/dashboard/history"
+              className="glass-card hover:border-[#00d4ff] group transition-all"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#a855f7] to-[#ff00ff] rounded-lg flex items-center justify-center">
+                  <History className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-white font-semibold mb-1 group-hover:text-[#00d4ff] transition">
+                    Processing History
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    View past jobs and downloads
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-[#00d4ff] group-hover:translate-x-1 transition-all" />
+              </div>
+            </Link>
+          </div>
 
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
