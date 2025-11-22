@@ -2,20 +2,20 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import Link from 'next/link'
-import { useAuth } from '@/lib/firebase/AuthContext'
 import { Mail, Lock, Eye, EyeOff, Loader2, ArrowLeft, User, Check } from 'lucide-react'
 
 export default function SignUpPage() {
   const router = useRouter()
-  const { signUp, signInGoogle, signInGithub, error, loading, clearError } = useAuth()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [localError, setLocalError] = useState('')
+  const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const passwordStrength = {
     hasLength: password.length >= 8,
@@ -28,47 +28,76 @@ export default function SignUpPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLocalError('')
-    clearError()
+    setError('')
 
     if (!name || !email || !password) {
-      setLocalError('Please fill in all fields')
+      setError('Please fill in all fields')
       return
     }
 
     if (password !== confirmPassword) {
-      setLocalError('Passwords do not match')
+      setError('Passwords do not match')
       return
     }
 
     if (!isPasswordStrong) {
-      setLocalError('Please use a stronger password')
+      setError('Please use a stronger password')
       return
     }
 
+    setLoading(true)
+
     try {
-      await signUp(email, password, name)
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Failed to create account')
+        setLoading(false)
+        return
+      }
+
       setSuccess(true)
-    } catch {
-      // Error handled by context
+
+      // Auto sign in after successful signup (since email verification is TODO)
+      setTimeout(async () => {
+        await signIn('credentials', {
+          email,
+          password,
+          redirect: true,
+          callbackUrl: '/dashboard',
+        })
+      }, 2000)
+    } catch (err: any) {
+      setError(err.message || 'Failed to create account')
+      setLoading(false)
     }
   }
 
   const handleGoogleSignIn = async () => {
+    setError('')
+    setLoading(true)
     try {
-      await signInGoogle()
-      router.push('/dashboard')
-    } catch {
-      // Error handled by context
+      await signIn('google', { callbackUrl: '/dashboard' })
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign in with Google')
+      setLoading(false)
     }
   }
 
   const handleGithubSignIn = async () => {
+    setError('')
+    setLoading(true)
     try {
-      await signInGithub()
-      router.push('/dashboard')
-    } catch {
-      // Error handled by context
+      await signIn('github', { callbackUrl: '/dashboard' })
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign in with GitHub')
+      setLoading(false)
     }
   }
 
@@ -80,14 +109,14 @@ export default function SignUpPage() {
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#00ff88]/20 flex items-center justify-center">
               <Check className="w-10 h-10 text-[#00ff88]" />
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2">Check Your Email</h1>
+            <h1 className="text-2xl font-bold text-white mb-2">Account Created!</h1>
             <p className="text-gray-400 mb-6">
-              We've sent a verification link to <span className="text-white">{email}</span>.
-              Please verify your email to complete registration.
+              Your account has been successfully created. Redirecting you to the dashboard...
             </p>
-            <Link href="/auth/signin" className="btn-neon inline-block px-8 py-3">
-              Continue to Sign In
-            </Link>
+            <div className="flex items-center justify-center gap-2 text-gray-400">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Signing you in...</span>
+            </div>
           </div>
         </div>
       </div>
