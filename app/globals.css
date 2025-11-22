@@ -25,10 +25,10 @@
   --accent-coral-dark: #d17766;
   --accent-coral-light: #f3b5aa;
 
-  /* Text Colors - Soft but readable */
-  --text-primary: #4a4a5e;
-  --text-secondary: #6b6b7e;
-  --text-muted: #9494a8;
+  /* Text Colors - Dark for excellent readability */
+  --text-primary: #1a1a2e;
+  --text-secondary: #3a3a4e;
+  --text-muted: #5a5a6e;
   --text-accent: #6b8e6a;
 
   /* Neumorphic Shadows */
@@ -98,10 +98,6 @@
 }
 
 @layer base {
-  * {
-    @apply transition-all duration-300 ease-out;
-  }
-
   body {
     background: var(--bg-base);
     color: var(--text-primary);
@@ -400,13 +396,14 @@
     color: var(--text-secondary);
     font-family: 'Poppins', sans-serif;
     font-weight: 500;
-    transition: all 0.3s;
+    transition: color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   }
 
   .neu-nav-item:hover {
     color: var(--text-primary);
     background: var(--bg-base);
     box-shadow: var(--neu-raised-sm);
+    transition-delay: 0.1s;
   }
 
   .neu-nav-item.active {
@@ -421,13 +418,14 @@
     color: var(--text-secondary);
     font-family: 'Poppins', sans-serif;
     font-weight: 500;
-    transition: all 0.3s;
+    transition: color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   }
 
   .nav-menu-item:hover {
     color: var(--text-primary);
     background: var(--bg-base);
     box-shadow: var(--neu-raised-sm);
+    transition-delay: 0.1s;
   }
 
   .nav-menu-item.active {
@@ -441,13 +439,14 @@
     color: var(--text-secondary);
     font-family: 'Poppins', sans-serif;
     font-weight: 500;
-    transition: all 0.3s;
+    transition: color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   }
 
   .sidebar-nav-item:hover {
     color: var(--text-primary);
     background: var(--bg-base);
     box-shadow: var(--neu-raised-sm);
+    transition-delay: 0.1s;
   }
 
   .sidebar-nav-item.active {
@@ -470,13 +469,14 @@
     color: var(--text-secondary);
     font-family: 'Poppins', sans-serif;
     font-weight: 500;
-    transition: all 0.3s;
+    transition: color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   }
 
   .top-nav-link:hover {
     color: var(--text-primary);
     background: var(--bg-base);
     box-shadow: var(--neu-raised-sm);
+    transition-delay: 0.1s;
   }
 
   /* ===== BADGES & LABELS ===== */
