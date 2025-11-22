@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
-import { useAuth } from '@/lib/firebase/AuthContext'
+import { useSession, signOut } from 'next-auth/react'
 import { ALL_TOOLS, getAllToolsFlat } from '@/lib/tools-data'
 import { TOOL_CATEGORIES, TIER_LIMITS } from '@/lib/config/constants'
 import { useRouter } from 'next/navigation'
@@ -53,7 +53,7 @@ interface Activity {
 
 export default function DashboardPage() {
   const router = useRouter()
-  const { user, loading: authLoading, logout } = useAuth()
+  const { data: session, status } = useSession()
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [usageStats, setUsageStats] = useState<UsageStats | null>(null)
   const [activity, setActivity] = useState<Activity[]>([])
@@ -87,36 +87,29 @@ export default function DashboardPage() {
   }, [])
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/auth/signin')
+    if (status === 'unauthenticated') {
+      router.push('/login')
     }
-  }, [user, authLoading, router])
+  }, [status, router])
 
   useEffect(() => {
-    if (user) {
+    if (session?.user) {
       fetchUserData()
       fetchActivity()
     }
-  }, [user])
+  }, [session])
 
   const fetchUserData = async () => {
     try {
-      const idToken = await user?.getIdToken()
-      if (!idToken) return
-
       // Fetch user profile
-      const profileRes = await fetch('/api/user/profile', {
-        headers: { 'Authorization': `Bearer ${idToken}` },
-      })
+      const profileRes = await fetch('/api/user/profile')
       if (profileRes.ok) {
         const { user: profile } = await profileRes.json()
         setUserProfile(profile)
       }
 
       // Fetch usage stats
-      const usageRes = await fetch('/api/user/usage', {
-        headers: { 'Authorization': `Bearer ${idToken}` },
-      })
+      const usageRes = await fetch('/api/user/usage')
       if (usageRes.ok) {
         const { usage } = await usageRes.json()
         setUsageStats(usage)
@@ -130,13 +123,7 @@ export default function DashboardPage() {
 
   const fetchActivity = async () => {
     try {
-      const idToken = await user?.getIdToken()
-      const headers: HeadersInit = {}
-      if (idToken) {
-        headers['Authorization'] = `Bearer ${idToken}`
-      }
-
-      const response = await fetch('/api/dashboard/stats', { headers })
+      const response = await fetch('/api/dashboard/stats')
       if (response.ok) {
         const data = await response.json()
         setActivity(data.recentActivity || [])
@@ -190,11 +177,10 @@ export default function DashboardPage() {
     : TOOL_CATEGORIES.find(cat => cat.id === selectedCategory)
 
   const handleLogout = async () => {
-    await logout()
-    router.push('/')
+    await signOut({ callbackUrl: '/' })
   }
 
-  if (authLoading || loading) {
+  if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen gradient-animated flex items-center justify-center">
         <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
@@ -202,7 +188,7 @@ export default function DashboardPage() {
     )
   }
 
-  if (!user) return null
+  if (!session) return null
 
   const userTier = userProfile?.subscription_tier || 'FREE'
   const dailyUsage = usageStats?.dailyUsage || 0
@@ -332,10 +318,10 @@ export default function DashboardPage() {
         <div className="p-4 border-t border-slate-200">
           <div className="flex items-center gap-3 p-3 glass-card border-blue-200">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-              {user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+              {session.user?.name?.charAt(0).toUpperCase() || session.user?.email?.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-slate-900 truncate">{user.displayName || 'User'}</div>
+              <div className="text-sm font-semibold text-slate-900 truncate">{session.user?.name || 'User'}</div>
               <div className="text-xs text-slate-500">{userTier}</div>
             </div>
             <button onClick={handleLogout} className="p-2 hover:bg-slate-100 rounded transition" title="Logout">
@@ -402,7 +388,7 @@ export default function DashboardPage() {
         <div ref={mainContentRef} className="flex-1 overflow-y-auto p-6">
           {/* Welcome & Usage Banner */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome back, {user.displayName || 'User'}! 👋</h1>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome back, {session.user?.name || 'User'}! 👋</h1>
             <p className="text-slate-600">Ready to process your documents?</p>
           </div>
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/lib/firebase/AuthContext'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Upload, X, Loader2, Download, FileText, AlertCircle, CheckCircle, Scissors } from 'lucide-react'
 import Link from 'next/link'
@@ -18,8 +18,9 @@ type SplitMode = 'ranges' | 'every' | 'manual'
 
 export default function PDFSplitTool() {
   const router = useRouter()
-  const { user } = useAuth()
+  const { data: session, status } = useSession()
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+  const [uploadedFileId, setUploadedFileId] = useState<string | null>(null)
   const [pages, setPages] = useState<PDFPage[]>([])
   const [splitMode, setSplitMode] = useState<SplitMode>('manual')
   const [everyNPages, setEveryNPages] = useState(1)
@@ -29,18 +30,24 @@ export default function PDFSplitTool() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [userTier, setUserTier] = useState<SubscriptionTier>('FREE')
-  const [downloadUrls, setDownloadUrls] = useState<string[]>([])
+  const [jobId, setJobId] = useState<string | null>(null)
+  const [jobStatus, setJobStatus] = useState<string | null>(null)
+  const [downloadUrls, setDownloadUrls] = useState<Array<{ id: string; name: string; downloadUrl: string }>>([])
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login')
+    }
+  }, [status, router])
 
   // Fetch user profile
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!user) return
+      if (!session?.user) return
 
       try {
-        const idToken = await user.getIdToken()
-        const profileRes = await fetch('/api/user/profile', {
-          headers: { 'Authorization': `Bearer ${idToken}` },
-        })
+        const profileRes = await fetch('/api/user/profile')
         if (profileRes.ok) {
           const { user: profile } = await profileRes.json()
           setUserTier(profile.subscription_tier)
@@ -51,7 +58,7 @@ export default function PDFSplitTool() {
     }
 
     fetchUserData()
-  }, [user])
+  }, [session])
 
   // Check for transferred files
   useEffect(() => {
@@ -200,47 +207,128 @@ export default function PDFSplitTool() {
       return
     }
 
+    if (!uploadedFile) {
+      setError('No file uploaded')
+      return
+    }
+
     setProcessing(true)
     setError(null)
     setSuccess(null)
+    setJobStatus('Uploading file...')
 
     try {
-      const idToken = await user?.getIdToken()
-      if (!idToken || !uploadedFile) {
-        throw new Error('Not authenticated or no file uploaded')
+      // Step 1: Upload file if not already uploaded
+      let fileId = uploadedFileId
+      if (!fileId) {
+        const formData = new FormData()
+        formData.append('file', uploadedFile)
+
+        const uploadResponse = await fetch('/api/files/upload', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!uploadResponse.ok) {
+          const data = await uploadResponse.json()
+          throw new Error(data.error || 'Failed to upload file')
+        }
+
+        const uploadData = await uploadResponse.json()
+        fileId = uploadData.file.id
+        setUploadedFileId(fileId)
       }
 
-      const formData = new FormData()
-      formData.append('file', uploadedFile)
-      formData.append('splitPoints', JSON.stringify(splitPoints))
-
-      const response = await fetch('/api/tools/pdf-split', {
+      // Step 2: Queue split job
+      setJobStatus('Queuing split job...')
+      const splitResponse = await fetch('/api/tools/pdf-split', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${idToken}`,
+          'Content-Type': 'application/json',
         },
-        body: formData,
+        body: JSON.stringify({
+          fileId,
+          splitPoints,
+        }),
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Split failed')
+      if (!splitResponse.ok) {
+        const data = await splitResponse.json()
+        throw new Error(data.error || 'Failed to queue split job')
       }
 
-      setDownloadUrls(data.downloadUrls || [])
-      setSuccess(`Successfully split PDF into ${data.downloadUrls?.length || 0} files!`)
+      const splitData = await splitResponse.json()
+      const jobId = splitData.jobId
+      setJobId(jobId)
+
+      // Step 3: Poll job status
+      await pollJobStatus(jobId)
     } catch (err: any) {
       setError(err.message || 'Failed to split PDF')
-    } finally {
+      setJobStatus(null)
       setProcessing(false)
     }
   }
 
+  const pollJobStatus = async (jobId: string) => {
+    const maxAttempts = 60 // 60 attempts * 2 seconds = 2 minutes max
+    let attempts = 0
+
+    const poll = async () => {
+      try {
+        const response = await fetch(`/api/jobs/${jobId}`)
+
+        if (!response.ok) {
+          throw new Error('Failed to get job status')
+        }
+
+        const data = await response.json()
+        const job = data.job
+
+        setJobStatus(job.status === 'processing' ? 'Processing PDF...' : job.status)
+
+        if (job.status === 'completed') {
+          // Job completed successfully
+          if (job.metadata?.files && Array.isArray(job.metadata.files)) {
+            setDownloadUrls(job.metadata.files.map((file: any) => ({
+              id: file.id,
+              name: file.name,
+              downloadUrl: `/api/files/download/${file.id}`,
+            })))
+            setSuccess(`Successfully split PDF into ${job.metadata.files.length} files!`)
+          } else {
+            setSuccess('PDF split completed!')
+          }
+          setProcessing(false)
+          setJobStatus(null)
+          return
+        } else if (job.status === 'failed') {
+          throw new Error(job.error || 'Split job failed')
+        } else if (job.status === 'queued' || job.status === 'processing') {
+          // Continue polling
+          attempts++
+          if (attempts >= maxAttempts) {
+            throw new Error('Job timeout - please check back later')
+          }
+          setTimeout(poll, 2000) // Poll every 2 seconds
+        }
+      } catch (err: any) {
+        setError(err.message || 'Failed to check job status')
+        setProcessing(false)
+        setJobStatus(null)
+      }
+    }
+
+    poll()
+  }
+
   const clearFile = () => {
     setUploadedFile(null)
+    setUploadedFileId(null)
     setPages([])
     setDownloadUrls([])
+    setJobId(null)
+    setJobStatus(null)
     setError(null)
     setSuccess(null)
   }
@@ -281,6 +369,13 @@ export default function PDFSplitTool() {
           <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2">
             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-green-700">{success}</p>
+          </div>
+        )}
+
+        {jobStatus && (
+          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2">
+            <Loader2 className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5 animate-spin" />
+            <p className="text-sm text-blue-700">{jobStatus}</p>
           </div>
         )}
 
@@ -448,17 +543,16 @@ export default function PDFSplitTool() {
                   <div className="glass-card">
                     <h3 className="text-lg font-bold text-slate-900 mb-3">Download Files</h3>
                     <div className="space-y-2">
-                      {downloadUrls.map((url, index) => (
+                      {downloadUrls.map((file, index) => (
                         <a
-                          key={index}
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          key={file.id}
+                          href={file.downloadUrl}
+                          download
                           className="flex items-center justify-between p-3 glass hover:border-blue-500 rounded-lg transition"
                         >
                           <div className="flex items-center gap-2">
                             <FileText className="w-4 h-4 text-red-500" />
-                            <span className="text-sm text-slate-900">Part {index + 1}.pdf</span>
+                            <span className="text-sm text-slate-900">{file.name || `Part ${index + 1}.pdf`}</span>
                           </div>
                           <Download className="w-4 h-4 text-blue-500" />
                         </a>
