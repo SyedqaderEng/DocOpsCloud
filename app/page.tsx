@@ -52,25 +52,25 @@ export default function HomePage() {
     setIsDragging(false)
   }, [])
 
-  const handleDrop = useCallback(async (e: React.DragEvent) => {
+  const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
     const files = Array.from(e.dataTransfer.files)
     if (files.length > 0) {
-      // Immediately store files and redirect to tool selection
-      const { fileTransferManager } = await import('@/lib/utils/file-transfer')
-      const transferId = await fileTransferManager.storeFiles(files)
-      router.push(`/select-tool?transfer=${transferId}`)
+      setUploadedFiles(prev => [...prev, ...files].slice(0, 5))
+      setShowToolSelection(true)
+      // Scroll to tools section
+      document.getElementById('tools')?.scrollIntoView({ behavior: 'smooth' })
     }
-  }, [router])
+  }, [])
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (files.length > 0) {
-      // Immediately store files and redirect to tool selection
-      const { fileTransferManager } = await import('@/lib/utils/file-transfer')
-      const transferId = await fileTransferManager.storeFiles(files)
-      router.push(`/select-tool?transfer=${transferId}`)
+      setUploadedFiles(prev => [...prev, ...files].slice(0, 5))
+      setShowToolSelection(true)
+      // Scroll to tools section
+      document.getElementById('tools')?.scrollIntoView({ behavior: 'smooth' })
     }
   }
 
@@ -164,54 +164,7 @@ export default function HomePage() {
                 )}
               </div>
 
-              {/* Tools Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() => setToolsMenuOpen(!toolsMenuOpen)}
-                  className="flex items-center gap-1 text-gray-300 hover:text-[#00d4ff] transition font-medium px-3 py-2"
-                >
-                  Tools
-                  <ChevronDown className={`w-4 h-4 transition-transform ${toolsMenuOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {toolsMenuOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-[600px] glass-strong border border-[rgba(255,255,255,0.2)] rounded-xl overflow-hidden shadow-2xl p-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      {TOOL_CATEGORIES.map((category) => (
-                        <div key={category.id}>
-                          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-[rgba(255,255,255,0.1)]">
-                            <span className="text-2xl">{category.icon}</span>
-                            <span className="text-white font-semibold">{category.name}</span>
-                          </div>
-                          <div className="space-y-1">
-                            {category.subcategories.slice(0, 2).map((sub) => (
-                              sub.tools.slice(0, 3).map((toolId) => (
-                                <Link
-                                  key={toolId}
-                                  href={`/tools/${toolId}`}
-                                  onClick={() => setToolsMenuOpen(false)}
-                                  className="block text-sm text-gray-400 hover:text-[#00d4ff] transition py-1 truncate"
-                                >
-                                  {toolId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
-                                </Link>
-                              ))
-                            ))}
-                            <Link
-                              href={`/tools?category=${category.id}`}
-                              onClick={() => setToolsMenuOpen(false)}
-                              className="text-sm text-[#00d4ff] hover:underline inline-block mt-1"
-                            >
-                              View all {category.name} →
-                            </Link>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <Link href="/tools" className="top-nav-link">All Tools</Link>
+              <a href="#tools" className="top-nav-link">Browse Tools</a>
               <Link href="#features" className="top-nav-link">Features</Link>
               <Link href="#pricing" className="top-nav-link">Pricing</Link>
               <Link href="/dashboard" className="top-nav-link">Dashboard</Link>
@@ -237,7 +190,7 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Link href="/tools" className="block text-gray-300 hover:text-[#00d4ff] transition font-medium py-2">All Tools</Link>
+                <a href="#tools" className="block text-gray-300 hover:text-[#00d4ff] transition font-medium py-2">Browse Tools</a>
                 <Link href="#features" className="block text-gray-300 hover:text-[#00d4ff] transition font-medium py-2">Features</Link>
                 <Link href="#pricing" className="block text-gray-300 hover:text-[#00d4ff] transition font-medium py-2">Pricing</Link>
                 <Link href="/dashboard" className="block text-gray-300 hover:text-[#00d4ff] transition font-medium py-2">Dashboard</Link>
@@ -261,7 +214,7 @@ export default function HomePage() {
               <span className="text-gradient">In Seconds</span>
             </h1>
             <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-              Drop your files below and get started instantly. No sign-up required for basic operations.
+              Browse {totalTools}+ tools below or drop files here. No sign-up required for basic operations.
             </p>
           </div>
 
