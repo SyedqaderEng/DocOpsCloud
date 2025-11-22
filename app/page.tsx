@@ -97,11 +97,15 @@ export default function HomePage() {
     return allTools.filter(tool => tool.id.startsWith(primaryType) || tool.category === primaryType).slice(0, 12)
   }
 
-  const navigateToTool = (toolId: string) => {
+  const navigateToTool = async (toolId: string) => {
     if (uploadedFiles.length > 0) {
-      sessionStorage.setItem('pendingFiles', JSON.stringify(uploadedFiles.map(f => f.name)))
+      // Store files in IndexedDB for transfer to tool page
+      const { fileTransferManager } = await import('@/lib/utils/file-transfer')
+      const transferId = await fileTransferManager.storeFiles(uploadedFiles, toolId)
+      router.push(`/tools/${toolId}?transfer=${transferId}`)
+    } else {
+      router.push(`/tools/${toolId}`)
     }
-    router.push(`/tools/${toolId}`)
   }
 
   return (

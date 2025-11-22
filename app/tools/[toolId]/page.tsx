@@ -21,7 +21,38 @@ export default function ToolPage() {
   const [progress, setProgress] = useState(0)
   const [resultUrl, setResultUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [loadingTransfer, setLoadingTransfer] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Check for transferred files from landing page
+  useEffect(() => {
+    const checkForTransferredFiles = async () => {
+      const urlParams = new URLSearchParams(window.location.search)
+      const transferId = urlParams.get('transfer')
+
+      if (transferId) {
+        setLoadingTransfer(true)
+        try {
+          const { fileTransferManager } = await import('@/lib/utils/file-transfer')
+          const data = await fileTransferManager.retrieveFiles(transferId)
+
+          if (data && data.files && data.files.length > 0) {
+            setUploadedFiles(data.files)
+            // Clean up the transfer
+            await fileTransferManager.deleteFiles(transferId)
+            // Remove transfer param from URL
+            router.replace(`/tools/${toolId}`, { scroll: false })
+          }
+        } catch (err) {
+          console.error('Failed to retrieve transferred files:', err)
+        } finally {
+          setLoadingTransfer(false)
+        }
+      }
+    }
+
+    checkForTransferredFiles()
+  }, [toolId, router])
 
   // Get related tools
   const relatedTools = tool
@@ -216,7 +247,14 @@ export default function ToolPage() {
             } ${status !== 'idle' ? 'pointer-events-none' : ''}`}
           >
             <div className="p-12 text-center">
-              {status === 'idle' && (
+              {loadingTransfer && (
+                <>
+                  <Loader2 className="w-16 h-16 mx-auto mb-4 text-[#00d4ff] animate-spin" />
+                  <h3 className="text-xl font-bold text-white mb-2">Loading your files...</h3>
+                  <p className="text-gray-400">Please wait while we prepare your files</p>
+                </>
+              )}
+              {status === 'idle' && !loadingTransfer && (
                 <>
                   <Upload className={`w-16 h-16 mx-auto mb-4 text-[#00d4ff] transition-transform ${isDragging ? 'scale-110 animate-bounce' : 'group-hover:scale-105'}`} />
                   <h3 className="text-xl font-bold text-white mb-2">
