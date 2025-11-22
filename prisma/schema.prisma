@@ -190,6 +190,44 @@ enum ProcessingStatus {
   FAILED
 }
 
+// ==================== FILE VERSIONING ====================
+
+model FileVersion {
+  id              String   @id @default(cuid())
+  user_id         String
+  file_id         String
+  parent_version_id String?
+
+  // Version info
+  version_number  Int
+  version_label   String?
+  description     String?
+
+  // File snapshot
+  file_name       String
+  file_size       BigInt
+  file_type       FileType
+  s3_url          String
+  thumbnail_url   String?
+
+  // Operation that created this version
+  operation_type  String?
+  operation_params Json?
+  job_id          String?
+
+  // Metadata
+  checksum        String?
+  is_current      Boolean  @default(false)
+
+  created_at DateTime @default(now())
+
+  @@index([file_id])
+  @@index([user_id])
+  @@index([parent_version_id])
+  @@index([created_at])
+  @@map("file_versions")
+}
+
 // ==================== JOB PROCESSING ====================
 
 model ProcessingJob {

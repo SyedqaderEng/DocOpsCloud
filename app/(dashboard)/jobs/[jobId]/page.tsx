@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/firebase/AuthContext'
 import { Loader2, Download, FileText, CheckCircle2, XCircle, Clock, Activity, Mail, ArrowLeft, ArrowRight, RefreshCw } from 'lucide-react'
 import ShareableLink from '@/components/workflow/ShareableLink'
+import QueueVisualization from '@/components/queue/QueueVisualization'
 
 type JobStatus = 'queued' | 'processing' | 'completed' | 'failed'
 
@@ -271,6 +272,16 @@ export default function JobStatusPage() {
               </p>
             </div>
           )}
+        </div>
+
+        {/* Queue Visualization */}
+        {(job.status === 'queued' || job.status === 'processing') && (
+          <div className="mb-6">
+            <QueueVisualization jobId={job.id} />
+          </div>
+        )}
+
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-6">
 
           {/* Input File */}
           {job.inputFile && (
