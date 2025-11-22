@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Loader2, Download, FileText, CheckCircle2, XCircle, Clock, Activity } from 'lucide-react'
+import { useAuth } from '@/lib/firebase/AuthContext'
+import { Loader2, Download, FileText, CheckCircle2, XCircle, Clock, Activity, Mail, ArrowLeft, ArrowRight, RefreshCw } from 'lucide-react'
+import ShareableLink from '@/components/workflow/ShareableLink'
+import QueueVisualization from '@/components/queue/QueueVisualization'
 
 type JobStatus = 'queued' | 'processing' | 'completed' | 'failed'
 
@@ -33,11 +36,15 @@ interface Job {
 export default function JobStatusPage() {
   const params = useParams()
   const router = useRouter()
+  const { user } = useAuth()
   const jobId = params.jobId as string
 
   const [job, setJob] = useState<Job | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [emailSending, setEmailSending] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
+  const [emailError, setEmailError] = useState<string | null>(null)
 
   // Fetch job status
   const fetchJob = async () => {
@@ -79,12 +86,48 @@ export default function JobStatusPage() {
     return () => clearInterval(interval)
   }, [jobId])
 
+  // Email file functionality
+  const handleEmailFile = async () => {
+    if (!job?.outputFile || !user) return
+
+    setEmailSending(true)
+    setEmailError(null)
+
+    try {
+      const idToken = await user.getIdToken()
+
+      const res = await fetch('/api/files/email', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${idToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileId: job.outputFile.id,
+          email: user.email,
+        }),
+      })
+
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.error || 'Failed to send email')
+      }
+
+      setEmailSent(true)
+      setTimeout(() => setEmailSent(false), 5000) // Reset after 5 seconds
+    } catch (err: any) {
+      setEmailError(err.message || 'Failed to send email')
+    } finally {
+      setEmailSending(false)
+    }
+  }
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen gradient-animated flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-16 w-16 animate-spin text-purple-600 mx-auto mb-4" />
-          <p className="text-gray-600 text-lg">Loading job status...</p>
+          <Loader2 className="h-16 w-16 animate-spin text-[#00d4ff] mx-auto mb-4" />
+          <p className="text-gray-300 text-lg">Loading job status...</p>
         </div>
       </div>
     )
@@ -92,16 +135,16 @@ export default function JobStatusPage() {
 
   if (error || !job) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-gray-200 p-8 text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <XCircle className="w-8 h-8 text-red-600" />
+      <div className="min-h-screen gradient-animated flex items-center justify-center p-6">
+        <div className="max-w-md w-full glass-card border-2 border-[#ff0055]">
+          <div className="w-16 h-16 bg-[rgba(255,0,85,0.2)] rounded-full flex items-center justify-center mx-auto mb-4">
+            <XCircle className="w-8 h-8 text-[#ff0055]" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Job Not Found</h1>
-          <p className="text-gray-600 mb-6">{error || 'The requested job could not be found.'}</p>
+          <h1 className="text-2xl font-bold text-white mb-2 text-center">Job Not Found</h1>
+          <p className="text-gray-300 mb-6 text-center">{error || 'The requested job could not be found.'}</p>
           <Link
             href="/dashboard"
-            className="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition"
+            className="block btn-neon py-3 text-center"
           >
             Back to Dashboard
           </Link>
@@ -157,7 +200,7 @@ export default function JobStatusPage() {
   const progress = job.progress || 0
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen gradient-animated">
       {/* Navigation */}
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -229,6 +272,16 @@ export default function JobStatusPage() {
               </p>
             </div>
           )}
+        </div>
+
+        {/* Queue Visualization */}
+        {(job.status === 'queued' || job.status === 'processing') && (
+          <div className="mb-6">
+            <QueueVisualization jobId={job.id} />
+          </div>
+        )}
+
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-8 mb-6">
 
           {/* Input File */}
           {job.inputFile && (
@@ -251,29 +304,67 @@ export default function JobStatusPage() {
           {/* Output File */}
           {job.status === 'completed' && job.outputFile && (
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">Output File</h3>
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-5">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Download className="w-6 h-6 text-green-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 truncate">{job.outputFile.name}</p>
-                      <p className="text-sm text-gray-600">
-                        {(job.outputFile.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
-                    </div>
+              <h3 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Output File</h3>
+              <div className="glass-card border-2 border-[#00ff88]">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-[#00ff88] to-[#00d4ff] rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Download className="w-6 h-6 text-white" />
                   </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-white truncate">{job.outputFile.name}</p>
+                    <p className="text-sm text-gray-400">
+                      {(job.outputFile.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  </div>
+                </div>
+
+                {/* Download & Email Buttons */}
+                <div className="grid grid-cols-2 gap-3">
                   <a
                     href={job.outputFile.downloadUrl}
                     download
-                    className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition shadow-sm flex items-center gap-2 flex-shrink-0"
+                    className="px-6 py-3 bg-gradient-to-r from-[#00d4ff] to-[#a855f7] text-white rounded-lg font-semibold hover:from-[#00e5ff] hover:to-[#b966ff] transition shadow-lg flex items-center justify-center gap-2"
                   >
                     <Download className="w-4 h-4" />
                     Download
                   </a>
+                  <button
+                    onClick={handleEmailFile}
+                    disabled={emailSending || emailSent}
+                    className="px-6 py-3 glass-strong border-2 border-[#00d4ff] text-white rounded-lg font-semibold hover:bg-[rgba(0,212,255,0.2)] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {emailSending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Sending...
+                      </>
+                    ) : emailSent ? (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" />
+                        Sent!
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="w-4 h-4" />
+                        Email
+                      </>
+                    )}
+                  </button>
                 </div>
+
+                {/* Email Status Messages */}
+                {emailSent && (
+                  <div className="mt-3 p-3 bg-[rgba(0,255,136,0.1)] border border-[#00ff88] rounded-lg flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#00ff88]" />
+                    <p className="text-sm text-[#00ff88]">File sent to {user?.email}</p>
+                  </div>
+                )}
+                {emailError && (
+                  <div className="mt-3 p-3 bg-[rgba(255,0,85,0.1)] border border-[#ff0055] rounded-lg flex items-center gap-2">
+                    <XCircle className="w-4 h-4 text-[#ff0055]" />
+                    <p className="text-sm text-red-300">{emailError}</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
