@@ -13,65 +13,86 @@ export default function PricingPage() {
 
   const plans = [
     {
-      name: 'Free',
+      name: 'FREE',
+      id: 'free',
       icon: Zap,
       price: { monthly: 0, yearly: 0 },
       description: 'Perfect for trying out our platform',
       features: [
-        '5 operations per day',
-        'All 120+ tools included',
+        '5 operations/day',
+        'All tools included',
         '10MB max file size',
         'Basic support',
-        'Files auto-delete in 1 hour',
       ],
-      cta: user ? 'Current Plan' : 'Get Started',
+      cta: user ? 'Current Plan' : 'Start Free',
       popular: false,
     },
     {
-      name: 'Pro',
+      name: 'PRO',
+      id: 'pro',
       icon: Crown,
-      price: { monthly: 9, yearly: 79 },
+      price: { monthly: 0, yearly: 79 },
       description: 'Best for professionals and small teams',
       features: [
-        '1,000 operations per month',
-        'All 120+ tools included',
+        '1000 operations/month',
         '500MB max file size',
         'Priority processing',
         'API access',
         'Email support',
-        'Files stored for 7 days',
       ],
-      cta: 'Start Free Trial',
+      cta: 'Upgrade to Pro',
       popular: true,
     },
     {
-      name: 'Business',
+      name: 'BUSINESS',
+      id: 'business',
       icon: Building2,
-      price: { monthly: 29, yearly: 299 },
+      price: { monthly: 0, yearly: 299 },
       description: 'For teams with advanced needs',
       features: [
         'Unlimited operations',
-        'All 120+ tools included',
         '2GB max file size',
         '20 concurrent jobs',
-        'Priority processing',
-        'API access with higher limits',
-        'Priority support',
         'Custom branding',
-        'Files stored for 30 days',
+        'Priority support',
       ],
       cta: 'Contact Sales',
       popular: false,
     },
   ]
 
-  const handleSubscribe = (planName: string) => {
+  const handleSubscribe = (planName: string, planId: string) => {
     if (!user) {
+      // Store selected plan for after signup
+      sessionStorage.setItem('selectedPlan', planId)
       router.push('/auth/signup')
       return
     }
-    // TODO: Implement Stripe checkout
-    alert(`Subscription to ${planName} plan coming soon!`)
+
+    if (planId === 'free') {
+      router.push('/dashboard')
+      return
+    }
+
+    if (planId === 'business') {
+      // Open contact sales (could be a modal or separate page)
+      window.location.href = 'mailto:sales@docopscloud.com?subject=Business Plan Inquiry'
+      return
+    }
+
+    // For Pro plan, initiate payment
+    initiatePayment(planId)
+  }
+
+  const initiatePayment = async (planId: string) => {
+    try {
+      // TODO: Integrate with Stripe
+      // For now, just redirect to dashboard
+      router.push('/dashboard')
+    } catch (error) {
+      console.error('Payment error:', error)
+      alert('Payment processing failed. Please try again.')
+    }
   }
 
   return (
@@ -178,7 +199,7 @@ export default function PricingPage() {
               </ul>
 
               <button
-                onClick={() => handleSubscribe(plan.name)}
+                onClick={() => handleSubscribe(plan.name, plan.id)}
                 className={`w-full py-3 rounded-lg font-semibold transition ${
                   plan.popular
                     ? 'btn-neon'
