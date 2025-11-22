@@ -14,8 +14,10 @@ export default function WordMergePage() {
         acceptedFileTypes: '.docx,.doc',
         acceptedMimeTypes: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       }}
+      multiFileMode={true}
+      minFiles={2}
       defaultSettings={{}}
-      prepareRequestBody={(fileId) => ({ fileId })}
+      prepareRequestBody={(fileIds) => ({ fileIds })}
       features={[
         { title: 'Combine Documents', description: 'Merge multiple Word files into one' },
         { title: 'Preserve Formatting', description: 'Keeps styles and formatting intact' },

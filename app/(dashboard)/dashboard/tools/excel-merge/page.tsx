@@ -14,10 +14,10 @@ export default function ExcelMergePage() {
         acceptedFileTypes: '.xlsx,.xls',
         acceptedMimeTypes: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel',
       }}
+      multiFileMode={true}
+      minFiles={2}
       defaultSettings={{
         mergeType: 'sheets',
-        preserveFormatting: true,
-        addSourceInfo: false,
       }}
       renderSettings={({ settings, setSettings, processing }) => (
         <div className="space-y-4">
@@ -30,32 +30,14 @@ export default function ExcelMergePage() {
               disabled={processing}
             >
               <option value="sheets">Keep Separate Sheets</option>
-              <option value="append">Append All Rows</option>
-              <option value="side-by-side">Side by Side Columns</option>
+              <option value="rows">Append All Rows</option>
             </select>
-          </div>
-          <div className="space-y-2">
-            {[
-              { key: 'preserveFormatting', label: 'Preserve Formatting' },
-              { key: 'addSourceInfo', label: 'Add Source File Info' },
-            ].map(({ key, label }) => (
-              <label key={key} className="flex items-center gap-3 p-3 glass rounded-lg cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings[key]}
-                  onChange={(e) => setSettings({ ...settings, [key]: e.target.checked })}
-                  className="w-4 h-4"
-                  disabled={processing}
-                />
-                <span className="text-white">{label}</span>
-              </label>
-            ))}
           </div>
         </div>
       )}
-      prepareRequestBody={(fileId, settings) => ({ fileId, ...settings })}
+      prepareRequestBody={(fileIds, settings) => ({ fileIds, ...settings })}
       features={[
-        { title: 'Multiple Merge Modes', description: 'Sheets, append rows, or side-by-side' },
+        { title: 'Multiple Merge Modes', description: 'Sheets or append rows' },
         { title: 'Format Preservation', description: 'Keep all formatting and formulas' },
         { title: 'Unlimited Files', description: 'Merge any number of Excel files' },
       ]}
