@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth/config'
+import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db/prisma'
 import { checkUsageLimit, logUsage } from '@/lib/usage/limits'
 import { queueManager } from '@/lib/queue/client'
@@ -17,7 +16,7 @@ const splitSchema = z.object({
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -57,13 +56,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Convert splitPoints to pageRanges
-    // splitPoints = [3, 7] means split after page 3 and 7
-    // This creates ranges: [1-3], [4-7], [8-end]
-    // We need to get page count first, but we'll let the processor handle it
-    // For now, pass empty array if no split points
-    const pageRanges = splitPoints.length > 0 ? undefined : undefined
-
     // Create processing job
     const job = await prisma.processing_job.create({
       data: {
@@ -73,7 +65,6 @@ export async function POST(request: NextRequest) {
         input_file_id: fileId,
         metadata: {
           splitPoints,
-          pageRanges,
         },
       },
     })
@@ -86,7 +77,6 @@ export async function POST(request: NextRequest) {
       inputFileId: fileId,
       operationParams: {
         splitPoints,
-        pageRanges,
       },
     })
 
