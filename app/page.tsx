@@ -145,19 +145,20 @@ export default function HomePage() {
 
                 {/* Search Results Dropdown */}
                 {searchOpen && filteredTools.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 glass-strong border border-[rgba(255,255,255,0.2)] rounded-xl overflow-hidden shadow-2xl">
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-[#141420] border-2 border-[rgba(0,212,255,0.3)] rounded-xl overflow-hidden shadow-2xl z-50 max-h-96 overflow-y-auto">
                     {filteredTools.map((tool) => (
                       <Link
                         key={tool.id}
                         href={`/tools/${tool.id}`}
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(0,212,255,0.1)] transition border-b border-[rgba(255,255,255,0.05)] last:border-0"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(0,212,255,0.2)] transition border-b border-[rgba(255,255,255,0.1)] last:border-0 cursor-pointer"
                         onClick={() => setSearchOpen(false)}
                       >
                         <span className="text-2xl">{tool.icon}</span>
-                        <div>
-                          <div className="text-white font-medium text-sm">{tool.name}</div>
-                          <div className="text-gray-400 text-xs">{tool.description}</div>
+                        <div className="flex-1">
+                          <div className="text-white font-semibold text-sm">{tool.name}</div>
+                          <div className="text-gray-300 text-xs">{tool.description}</div>
                         </div>
+                        <ArrowRight className="w-4 h-4 text-[#00d4ff] opacity-0 group-hover:opacity-100 transition" />
                       </Link>
                     ))}
                   </div>
