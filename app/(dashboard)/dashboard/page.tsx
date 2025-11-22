@@ -20,6 +20,7 @@ import {
   Award,
   Settings,
   CreditCard,
+  RefreshCw,
 } from 'lucide-react'
 
 interface UserProfile {
@@ -57,7 +58,9 @@ export default function DashboardPage() {
   const [collapsedCategories, setCollapsedCategories] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [loading, setLoading] = useState(true)
+  const [contentRefreshing, setContentRefreshing] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
+  const mainContentRef = useRef<HTMLDivElement>(null)
   const allTools = getAllToolsFlat()
 
   // Filter tools based on search
@@ -148,11 +151,24 @@ export default function DashboardPage() {
   }
 
   const handleCategorySelect = (categoryId: string) => {
+    // Trigger refresh animation
+    setContentRefreshing(true)
+
+    // Update selected category
     setSelectedCategory(categoryId)
+
     // Expand the selected category automatically
     if (categoryId !== 'all') {
       setCollapsedCategories(prev => prev.filter(id => id !== categoryId))
     }
+
+    // Scroll main content to top for better UX
+    if (mainContentRef.current) {
+      mainContentRef.current.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+
+    // Remove refresh animation after a short delay
+    setTimeout(() => setContentRefreshing(false), 300)
   }
 
   // Get tools based on selected category
@@ -379,7 +395,7 @@ export default function DashboardPage() {
         </header>
 
         {/* Main Content Area */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div ref={mainContentRef} className="flex-1 overflow-y-auto p-6">
           {/* Welcome & Usage Banner */}
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-white mb-2">Welcome back, {user.displayName || 'User'}! 👋</h1>
@@ -457,17 +473,22 @@ export default function DashboardPage() {
           </div>
 
           {/* Category Showcase */}
-          <div>
+          <div className={`transition-opacity duration-300 ${contentRefreshing ? 'opacity-50' : 'opacity-100'}`}>
             {/* Category Header */}
-            <div className="mb-6 glass-card border-2 border-[#00d4ff]">
+            <div className="mb-6 glass-card border-2 border-[#00d4ff] transition-all duration-300">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 bg-gradient-to-br from-[#00d4ff] to-[#a855f7] rounded-xl flex items-center justify-center text-4xl shadow-lg shadow-[#00d4ff]/50">
                     {selectedCategoryData?.icon}
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-white mb-1">{selectedCategoryData?.name}</h2>
-                    <p className="text-sm text-gray-300">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-2xl font-bold text-white">{selectedCategoryData?.name}</h2>
+                      {contentRefreshing && (
+                        <RefreshCw className="w-5 h-5 text-[#00d4ff] animate-spin" />
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-300 mt-1">
                       {displayTools.length} {displayTools.length === 1 ? 'tool' : 'tools'} available
                       {selectedCategory !== 'all' && ' in this category'}
                     </p>
@@ -504,7 +525,10 @@ export default function DashboardPage() {
 
             {/* Tools Grid */}
             {displayTools.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div
+                key={selectedCategory}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-in fade-in duration-300"
+              >
                 {displayTools.map((tool) => (
                   <Link
                     key={tool.id}
