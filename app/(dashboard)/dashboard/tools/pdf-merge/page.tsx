@@ -118,7 +118,8 @@ export default function PDFMergeTool() {
     try {
       // Load PDF.js
       const pdfjsLib = await import('pdfjs-dist')
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+      // Use unpkg CDN for worker with correct .mjs extension for v5.x
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`
 
       const newPDFs: UploadedPDF[] = []
       let globalPageIndex = allPages.length
