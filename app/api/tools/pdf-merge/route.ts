@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
     await writeFile(filePath, pdfBytes)
 
     // 5. RETURN DOWNLOAD URL
-    const downloadUrl = `/api/download/${decodedToken.uid}/${fileName}`
+    const downloadUrl = `/api/files/${decodedToken.uid}/${fileName}`
 
     return NextResponse.json({
       success: true,
