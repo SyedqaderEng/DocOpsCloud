@@ -1,117 +1,96 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth/config'
-import { prisma } from '@/lib/db/prisma'
-import { checkUsageLimit, logUsage } from '@/lib/usage/limits'
-import { queueManager } from '@/lib/queue/client'
-import { z } from 'zod'
+import { auth } from '@/lib/firebase/admin'
+import { PDFDocument } from 'pdf-lib'
+import { writeFile, mkdir } from 'fs/promises'
+import { join } from 'path'
+import { v4 as uuidv4 } from 'uuid'
 
-const mergeSchema = z.object({
-  fileIds: z.array(z.string()).min(2, 'At least 2 files required'),
-})
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 /**
  * POST /api/tools/pdf-merge
- * Merge multiple PDF files
+ * Merge multiple PDF files with specific page selection
  */
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.id) {
+    // 1. AUTHENTICATE
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userId = session.user.id
+    const token = authHeader.split('Bearer ')[1]
+    const decodedToken = await auth.verifyIdToken(token)
 
-    // Check usage limits
-    const usageCheck = await checkUsageLimit(userId)
-    if (!usageCheck.allowed) {
-      return NextResponse.json(
-        {
-          error: 'Usage limit exceeded',
-          reason: usageCheck.reason,
-          remaining: usageCheck.remaining,
-        },
-        { status: 429 }
-      )
+    // 2. PARSE FORM DATA
+    const formData = await req.formData()
+    const files = formData.getAll('files') as File[]
+    const selectedPagesJson = formData.get('selectedPages') as string
+
+    if (!files || files.length === 0) {
+      return NextResponse.json({ error: 'No files provided' }, { status: 400 })
     }
 
-    // Validate request
-    const body = await request.json()
-    const { fileIds } = mergeSchema.parse(body)
-
-    // Verify all files belong to user
-    const files = await prisma.file.findMany({
-      where: {
-        id: { in: fileIds },
-        user_id: userId,
-      },
-    })
-
-    if (files.length !== fileIds.length) {
-      return NextResponse.json(
-        { error: 'Some files not found or not owned by you' },
-        { status: 404 }
-      )
+    let selectedPages: { fileIndex: number; pageNumber: number }[] = []
+    if (selectedPagesJson) {
+      selectedPages = JSON.parse(selectedPagesJson)
     }
 
-    // Verify all are PDFs
-    const allPdfs = files.every((f) => f.mime_type === 'application/pdf')
-    if (!allPdfs) {
-      return NextResponse.json(
-        { error: 'All files must be PDFs' },
-        { status: 400 }
-      )
+    // 3. CREATE MERGED PDF
+    const mergedPdf = await PDFDocument.create()
+
+    // Load all PDF files
+    const pdfDocs = await Promise.all(
+      files.map(async (file) => {
+        const arrayBuffer = await file.arrayBuffer()
+        return PDFDocument.load(arrayBuffer)
+      })
+    )
+
+    // If no specific pages selected, merge all pages from all files
+    if (selectedPages.length === 0) {
+      for (let fileIndex = 0; fileIndex < pdfDocs.length; fileIndex++) {
+        const pdf = pdfDocs[fileIndex]
+        const pageCount = pdf.getPageCount()
+
+        for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
+          selectedPages.push({ fileIndex, pageNumber: pageNum })
+        }
+      }
     }
 
-    // Create processing job
-    const job = await prisma.processing_job.create({
-      data: {
-        user_id: userId,
-        operation_type: 'pdf_merge',
-        status: 'queued',
-        input_file_id: fileIds[0], // Primary file
-        metadata: {
-          fileIds,
-          fileCount: fileIds.length,
-        },
-      },
-    })
+    // Copy selected pages in order
+    for (const { fileIndex, pageNumber } of selectedPages) {
+      const sourcePdf = pdfDocs[fileIndex]
+      const [copiedPage] = await mergedPdf.copyPages(sourcePdf, [pageNumber - 1])
+      mergedPdf.addPage(copiedPage)
+    }
 
-    // Queue the job
-    await queueManager.addPdfJob({
-      jobId: job.id,
-      userId,
-      operationType: 'pdf_merge',
-      inputFileId: fileIds[0],
-      operationParams: {
-        fileIds,
-      },
-    })
+    // 4. SAVE MERGED PDF
+    const pdfBytes = await mergedPdf.save()
 
-    // Log usage
-    await logUsage(userId, 'pdf_merge', 0)
+    // Create output directory
+    const outputDir = join(process.cwd(), 'temp', 'output', decodedToken.uid)
+    await mkdir(outputDir, { recursive: true })
+
+    const fileName = `merged_${uuidv4()}.pdf`
+    const filePath = join(outputDir, fileName)
+    await writeFile(filePath, pdfBytes)
+
+    // 5. RETURN DOWNLOAD URL
+    const downloadUrl = `/api/download/${decodedToken.uid}/${fileName}`
 
     return NextResponse.json({
       success: true,
-      jobId: job.id,
-      status: 'queued',
-      message: 'PDF merge job queued successfully',
-      checkStatusUrl: `/api/jobs/${job.id}`,
+      downloadUrl,
+      pageCount: mergedPdf.getPageCount(),
+      fileSize: pdfBytes.length,
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('PDF merge error:', error)
-
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request', details: error.errors },
-        { status: 400 }
-      )
-    }
-
     return NextResponse.json(
-      { error: 'Failed to merge PDFs' },
+      { error: error.message || 'Failed to merge PDFs' },
       { status: 500 }
     )
   }
