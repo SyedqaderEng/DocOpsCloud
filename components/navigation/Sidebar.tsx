@@ -19,6 +19,7 @@ import {
   Zap,
   FileText,
   BarChart3,
+  GitCompare,
 } from 'lucide-react'
 import { useAuth } from '@/lib/firebase/AuthContext'
 
@@ -77,6 +78,11 @@ export default function Sidebar() {
       name: 'File Versions',
       href: '/versions',
       icon: GitBranch,
+    },
+    {
+      name: 'Compare',
+      href: '/compare',
+      icon: GitCompare,
     },
     {
       name: 'All Tools',
