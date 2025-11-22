@@ -417,19 +417,43 @@
 
   /* Legacy navigation support */
   .nav-menu-item {
-    @apply neu-nav-item;
+    @apply px-4 py-2 rounded-2xl;
+    color: var(--text-secondary);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .nav-menu-item:hover {
+    color: var(--text-primary);
+    background: var(--bg-base);
+    box-shadow: var(--neu-raised-sm);
   }
 
   .nav-menu-item.active {
-    @apply neu-nav-item active;
+    color: var(--accent-sage-dark);
+    background: var(--bg-base);
+    box-shadow: var(--neu-inset-sm);
   }
 
   .sidebar-nav-item {
-    @apply neu-nav-item;
+    @apply px-4 py-2 rounded-2xl;
+    color: var(--text-secondary);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .sidebar-nav-item:hover {
+    color: var(--text-primary);
+    background: var(--bg-base);
+    box-shadow: var(--neu-raised-sm);
   }
 
   .sidebar-nav-item.active {
-    @apply neu-nav-item active;
+    color: var(--accent-sage-dark);
+    background: var(--bg-base);
+    box-shadow: var(--neu-inset-sm);
   }
 
   .top-nav {
@@ -442,7 +466,17 @@
   }
 
   .top-nav-link {
-    @apply neu-nav-item;
+    @apply px-4 py-2 rounded-2xl;
+    color: var(--text-secondary);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .top-nav-link:hover {
+    color: var(--text-primary);
+    background: var(--bg-base);
+    box-shadow: var(--neu-raised-sm);
   }
 
   /* ===== BADGES & LABELS ===== */
