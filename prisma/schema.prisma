@@ -622,6 +622,47 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+// ==================== SHARE LINKS ====================
+
+model ShareLink {
+  id        String   @id @default(cuid())
+  user_id   String
+  file_id   String
+
+  // Share settings
+  share_id       String   @unique @default(cuid())
+  password_hash  String?
+  max_views      Int?
+  current_views  Int      @default(0)
+  allow_download Boolean  @default(true)
+
+  // Lifecycle
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  @@index([share_id])
+  @@index([file_id])
+  @@index([user_id])
+  @@index([expires_at])
+  @@map("share_links")
+}
+
+model ShareLinkView {
+  id           String   @id @default(cuid())
+  share_id     String
+
+  // Viewer info
+  ip_address   String?
+  user_agent   String?
+  downloaded   Boolean  @default(false)
+
+  viewed_at    DateTime @default(now())
+
+  @@index([share_id])
+  @@index([viewed_at])
+  @@map("share_link_views")
+}
+
 // ==================== SSO CONFIGURATION ====================
 
 model SSOConfiguration {
