@@ -6,9 +6,11 @@ import { getTotalToolCount, getAllToolsFlat } from '@/lib/tools-data'
 import { TOOL_CATEGORIES } from '@/lib/config/constants'
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { ChevronDown, Search, Upload, X, FileText, Image, FileSpreadsheet, File, Zap, ArrowRight, Menu } from 'lucide-react'
+import { useAuth } from '@/lib/firebase/AuthContext'
 
 export default function HomePage() {
   const router = useRouter()
+  const { user } = useAuth()
   const totalTools = getTotalToolCount()
   const allTools = getAllToolsFlat()
   const [searchQuery, setSearchQuery] = useState('')
@@ -102,13 +104,16 @@ export default function HomePage() {
   }
 
   const navigateToTool = async (toolId: string) => {
+    // Determine the correct path based on authentication status
+    const basePath = user ? '/dashboard/tools' : '/tools'
+
     if (uploadedFiles.length > 0) {
       // Store files in IndexedDB for transfer to tool page
       const { fileTransferManager } = await import('@/lib/utils/file-transfer')
       const transferId = await fileTransferManager.storeFiles(uploadedFiles, toolId)
-      router.push(`/tools/${toolId}?transfer=${transferId}`)
+      router.push(`${basePath}/${toolId}?transfer=${transferId}`)
     } else {
-      router.push(`/tools/${toolId}`)
+      router.push(`${basePath}/${toolId}`)
     }
   }
 
@@ -149,7 +154,7 @@ export default function HomePage() {
                     {filteredTools.map((tool) => (
                       <Link
                         key={tool.id}
-                        href={`/tools/${tool.id}`}
+                        href={user ? `/dashboard/tools/${tool.id}` : `/tools/${tool.id}`}
                         className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(0,212,255,0.2)] transition border-b border-[rgba(255,255,255,0.1)] last:border-0 cursor-pointer"
                         onClick={() => setSearchOpen(false)}
                       >
@@ -363,7 +368,7 @@ export default function HomePage() {
               { id: 'excel-merge', name: 'Merge Excel', icon: '📈', color: 'from-green-500/20 to-green-600/20' },
               { id: 'pdf-rotate', name: 'Rotate PDF', icon: '🔄', color: 'from-red-500/20 to-red-600/20' },
             ].map((tool) => (
-              <Link key={tool.id} href={`/tools/${tool.id}`}
+              <Link key={tool.id} href={user ? `/dashboard/tools/${tool.id}` : `/tools/${tool.id}`}
                 className={`glass-card hover:border-[#00d4ff] hover:shadow-[0_0_30px_rgba(0,212,255,0.2)] p-5 text-center transition-all group bg-gradient-to-br ${tool.color}`}>
                 <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">{tool.icon}</div>
                 <p className="text-white font-medium text-sm">{tool.name}</p>
@@ -408,7 +413,7 @@ export default function HomePage() {
                       </h4>
                       <div className="grid grid-cols-2 gap-2">
                         {subcategory.tools.map((toolId) => (
-                          <Link key={toolId} href={`/tools/${toolId}`}
+                          <Link key={toolId} href={user ? `/dashboard/tools/${toolId}` : `/tools/${toolId}`}
                             className="group px-4 py-2.5 glass hover:glass-strong hover:border-[#00d4ff] rounded-lg transition-all text-sm font-medium text-gray-300 hover:text-[#00d4ff] flex items-center justify-between">
                             <span className="truncate">{toolId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>
                             <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
