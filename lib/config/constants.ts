@@ -41,25 +41,31 @@ export const colors = {
 // Usage limits by tier
 export const TIER_LIMITS = {
   FREE: {
-    operations_per_month: 10,
+    operations_per_day: 5,
+    operations_per_month: 150, // 5 per day * 30 days
     max_file_size: 10 * 1024 * 1024, // 10MB
     max_storage: 100 * 1024 * 1024, // 100MB
-    features: ['basic_tools'],
+    features: ['all_tools'], // All tools included
     max_concurrent_jobs: 1,
+    support: 'basic',
   },
   PRO: {
+    operations_per_day: -1, // Unlimited per day
     operations_per_month: 1000,
     max_file_size: 500 * 1024 * 1024, // 500MB
     max_storage: 10 * 1024 * 1024 * 1024, // 10GB
-    features: ['basic_tools', 'advanced_tools', 'batch_processing', 'api_access'],
+    features: ['all_tools', 'priority_processing', 'api_access'],
     max_concurrent_jobs: 5,
+    support: 'email',
   },
   BUSINESS: {
-    operations_per_month: -1, // unlimited
+    operations_per_day: -1, // Unlimited
+    operations_per_month: -1, // Unlimited
     max_file_size: 2 * 1024 * 1024 * 1024, // 2GB
     max_storage: 100 * 1024 * 1024 * 1024, // 100GB
-    features: ['basic_tools', 'advanced_tools', 'batch_processing', 'api_access', 'priority_processing', 'custom_branding'],
+    features: ['all_tools', 'priority_processing', 'api_access', 'custom_branding'],
     max_concurrent_jobs: 20,
+    support: 'priority',
   },
 }
 
