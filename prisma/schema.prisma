@@ -190,6 +190,44 @@ enum ProcessingStatus {
   FAILED
 }
 
+// ==================== FILE VERSIONING ====================
+
+model FileVersion {
+  id              String   @id @default(cuid())
+  user_id         String
+  file_id         String
+  parent_version_id String?
+
+  // Version info
+  version_number  Int
+  version_label   String?
+  description     String?
+
+  // File snapshot
+  file_name       String
+  file_size       BigInt
+  file_type       FileType
+  s3_url          String
+  thumbnail_url   String?
+
+  // Operation that created this version
+  operation_type  String?
+  operation_params Json?
+  job_id          String?
+
+  // Metadata
+  checksum        String?
+  is_current      Boolean  @default(false)
+
+  created_at DateTime @default(now())
+
+  @@index([file_id])
+  @@index([user_id])
+  @@index([parent_version_id])
+  @@index([created_at])
+  @@map("file_versions")
+}
+
 // ==================== JOB PROCESSING ====================
 
 model ProcessingJob {
@@ -620,6 +658,47 @@ model AuditLog {
   @@index([action])
   @@index([resource_type, resource_id])
   @@map("audit_logs")
+}
+
+// ==================== SHARE LINKS ====================
+
+model ShareLink {
+  id        String   @id @default(cuid())
+  user_id   String
+  file_id   String
+
+  // Share settings
+  share_id       String   @unique @default(cuid())
+  password_hash  String?
+  max_views      Int?
+  current_views  Int      @default(0)
+  allow_download Boolean  @default(true)
+
+  // Lifecycle
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  @@index([share_id])
+  @@index([file_id])
+  @@index([user_id])
+  @@index([expires_at])
+  @@map("share_links")
+}
+
+model ShareLinkView {
+  id           String   @id @default(cuid())
+  share_id     String
+
+  // Viewer info
+  ip_address   String?
+  user_agent   String?
+  downloaded   Boolean  @default(false)
+
+  viewed_at    DateTime @default(now())
+
+  @@index([share_id])
+  @@index([viewed_at])
+  @@map("share_link_views")
 }
 
 // ==================== SSO CONFIGURATION ====================
