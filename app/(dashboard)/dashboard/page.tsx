@@ -1,12 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/lib/firebase/AuthContext'
-import { ALL_TOOLS } from '@/lib/tools-data'
+import { ALL_TOOLS, getAllToolsFlat } from '@/lib/tools-data'
 import { TIER_LIMITS } from '@/lib/config/constants'
 import { useRouter } from 'next/navigation'
-import { Loader2, LogOut } from 'lucide-react'
+import { Loader2, LogOut, ArrowRight } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
 const AnalyticsPanel = dynamic(() => import('@/components/dashboard/AnalyticsPanel'), { ssr: false })
@@ -58,6 +58,30 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [usageStats, setUsageStats] = useState<UsageStats | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
+  const searchRef = useRef<HTMLDivElement>(null)
+  const allTools = getAllToolsFlat()
+
+  // Filter tools based on search
+  const filteredTools = searchQuery.length > 1
+    ? allTools.filter(tool =>
+        tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tool.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tool.id.toLowerCase().includes(searchQuery.toLowerCase())
+      ).slice(0, 8)
+    : []
+
+  // Close search when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -214,9 +238,37 @@ export default function DashboardPage() {
         {/* Top Bar */}
         <header className="glass-strong border-b border-[rgba(255,255,255,0.1)] px-8 py-4 flex items-center justify-between">
           <div className="flex-1 max-w-xl">
-            <div className="relative">
-              <input type="search" placeholder="Search files, jobs..." className="w-full pl-10 pr-4 py-2 glass-strong border border-[rgba(255,255,255,0.2)] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#00d4ff]" />
+            <div className="relative" ref={searchRef}>
+              <input
+                type="search"
+                placeholder="Search tools..."
+                className="w-full pl-10 pr-4 py-2 glass-strong border border-[rgba(255,255,255,0.2)] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#00d4ff]"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setSearchOpen(true)}
+              />
               <span className="absolute left-3 top-2.5 text-gray-400">🔍</span>
+
+              {/* Search Results Dropdown */}
+              {searchOpen && filteredTools.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-[#141420] border-2 border-[rgba(0,212,255,0.3)] rounded-xl overflow-hidden shadow-2xl z-50 max-h-96 overflow-y-auto">
+                  {filteredTools.map((tool) => (
+                    <Link
+                      key={tool.id}
+                      href={`/tools/${tool.id}`}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(0,212,255,0.2)] transition border-b border-[rgba(255,255,255,0.1)] last:border-0 cursor-pointer"
+                      onClick={() => setSearchOpen(false)}
+                    >
+                      <span className="text-2xl">{tool.icon}</span>
+                      <div className="flex-1">
+                        <div className="text-white font-semibold text-sm">{tool.name}</div>
+                        <div className="text-gray-300 text-xs">{tool.description}</div>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-[#00d4ff]" />
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-4">
