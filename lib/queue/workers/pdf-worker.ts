@@ -95,11 +95,42 @@ export class PdfWorker extends BaseWorker {
    */
   private async processPdfSplit(job: Job<PdfSplitJobData>): Promise<JobResult> {
     const startTime = Date.now()
-    const { pageRanges } = job.data.operationParams
+    const { pageRanges: providedRanges, splitPoints } = job.data.operationParams
 
     await this.updateProgress(job, { progress: 10, message: 'Starting PDF split...' })
 
-    await this.updateProgress(job, { progress: 30, message: 'Downloading PDF...' })
+    // Convert splitPoints to pageRanges if needed
+    let pageRanges = providedRanges
+    if (!pageRanges && splitPoints && splitPoints.length > 0) {
+      await this.updateProgress(job, { progress: 20, message: 'Calculating split ranges...' })
+
+      // Get PDF metadata to determine total pages
+      const pdfBuffer = await this.processor['downloadFile'](job.data.inputFileId)
+      const { default: { PDFDocument } } = await import('pdf-lib')
+      const pdfDoc = await PDFDocument.load(pdfBuffer)
+      const totalPages = pdfDoc.getPageCount()
+
+      // Convert splitPoints to ranges
+      // splitPoints = [3, 7] means split after page 3 and 7
+      // Creates ranges: [1-3], [4-7], [8-totalPages]
+      const sortedPoints = [...new Set(splitPoints)].sort((a, b) => a - b)
+      pageRanges = []
+      let currentStart = 1
+
+      for (const point of sortedPoints) {
+        if (point >= currentStart && point < totalPages) {
+          pageRanges.push({ start: currentStart, end: point })
+          currentStart = point + 1
+        }
+      }
+
+      // Add final range
+      if (currentStart <= totalPages) {
+        pageRanges.push({ start: currentStart, end: totalPages })
+      }
+    }
+
+    await this.updateProgress(job, { progress: 30, message: 'Processing PDF split...' })
 
     const results = await this.processor.splitPdf(
       job.data.inputFileId,

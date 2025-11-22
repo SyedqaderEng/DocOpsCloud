@@ -54,6 +54,7 @@ export interface PdfSplitJobData extends BaseJobData {
   operationType: 'pdf_split'
   operationParams: {
     pageRanges?: Array<{ start: number; end: number }>
+    splitPoints?: number[]
     splitEvery?: number
   }
 }
