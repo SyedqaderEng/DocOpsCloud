@@ -70,6 +70,50 @@ export default function DashboardToolPage({ params }: PageProps) {
     fetchUserData()
   }, [user])
 
+  // Check for transferred files from landing page
+  useEffect(() => {
+    const checkForTransferredFiles = async () => {
+      const urlParams = new URLSearchParams(window.location.search)
+      const transferId = urlParams.get('transfer')
+
+      if (transferId) {
+        try {
+          const { fileTransferManager } = await import('@/lib/utils/file-transfer')
+          const data = await fileTransferManager.retrieveFiles(transferId)
+
+          if (data && data.files && data.files.length > 0) {
+            // Validate transferred files against user tier
+            const validFiles: File[] = []
+            for (const file of data.files) {
+              const validation = validateFileSize(file, userTier)
+              if (validation.valid) {
+                validFiles.push(file)
+              } else {
+                console.warn(`File ${file.name} exceeds size limit for ${userTier} tier`)
+              }
+            }
+
+            if (validFiles.length > 0) {
+              setUploadedFiles(validFiles)
+            }
+
+            // Clean up the transfer
+            await fileTransferManager.deleteFiles(transferId)
+            // Remove transfer param from URL
+            router.replace(`/dashboard/tools/${toolId}`, { scroll: false })
+          }
+        } catch (err) {
+          console.error('Failed to retrieve transferred files:', err)
+        }
+      }
+    }
+
+    // Only run after we have the user tier loaded
+    if (userTier) {
+      checkForTransferredFiles()
+    }
+  }, [toolId, router, userTier])
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     handleFiles(files)
