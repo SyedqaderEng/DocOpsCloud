@@ -182,8 +182,12 @@ export default function DashboardPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen gradient-animated flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
+      <div className="min-h-screen bg-[#080810] flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-[#0ea5e9] animate-spin mx-auto mb-4" />
+          <p className="text-[#f8fafc] text-lg font-semibold">Loading dashboard...</p>
+          <p className="text-[#cbd5e1] text-sm mt-2">Please wait</p>
+        </div>
       </div>
     )
   }
@@ -198,19 +202,19 @@ export default function DashboardPage() {
   const usagePercentage = monthlyLimit === -1 ? 0 : (monthlyUsage / monthlyLimit) * 100
 
   return (
-    <div className="flex h-screen gradient-animated overflow-hidden">
+    <div className="flex h-screen bg-[#080810] overflow-hidden">
       {/* LEFT SIDEBAR - Tool Categories */}
-      <aside className="w-72 glass-strong border-r border-slate-200 flex flex-col overflow-hidden">
+      <aside className="w-72 bg-[#0d0d15] border-r border-[rgba(255,255,255,0.1)] flex flex-col overflow-hidden shadow-2xl">
         {/* Logo */}
-        <div className="p-5 border-b border-slate-200">
-          <Link href="/" className="text-2xl font-extrabold text-slate-900">
-            Doc<span className="text-gradient">Ops</span>Cloud
+        <div className="p-5 border-b border-[rgba(255,255,255,0.1)]">
+          <Link href="/" className="text-2xl font-extrabold text-[#f8fafc]">
+            Doc<span className="text-gradient-blue">Ops</span>Cloud
           </Link>
         </div>
 
         {/* Tool Categories */}
         <div className="flex-1 overflow-y-auto p-4">
-          <div className="text-xs font-bold text-slate-500 uppercase mb-3 px-2">Tool Categories</div>
+          <div className="text-xs font-bold text-[#94a3b8] uppercase mb-3 px-2 tracking-wider">Tool Categories</div>
 
           {/* All Tools Option */}
           <div className="mb-3">
@@ -218,21 +222,21 @@ export default function DashboardPage() {
               onClick={() => handleCategorySelect('all')}
               className={`w-full flex items-center justify-between p-3 rounded-lg transition text-left group ${
                 selectedCategory === 'all'
-                  ? 'bg-gradient-to-r from-[rgba(0,212,255,0.2)] to-[rgba(168,85,247,0.2)] border-2 border-[#00d4ff]'
-                  : 'hover:bg-[rgba(0,212,255,0.1)] border-2 border-transparent'
+                  ? 'bg-[rgba(14,165,233,0.15)] border-2 border-[rgba(14,165,233,0.5)] shadow-lg shadow-[rgba(14,165,233,0.2)]'
+                  : 'hover:bg-[#18181f] border-2 border-transparent hover:border-[rgba(255,255,255,0.08)]'
               }`}
             >
               <div className="flex items-center gap-3">
                 <span className="text-2xl">📚</span>
                 <div>
-                  <div className={`font-semibold text-sm ${selectedCategory === 'all' ? 'text-[#00d4ff]' : 'text-white'}`}>
+                  <div className={`font-semibold text-sm ${selectedCategory === 'all' ? 'text-[#38bdf8]' : 'text-[#f8fafc]'}`}>
                     All Tools
                   </div>
-                  <div className="text-xs text-gray-400">{allTools.length} tools</div>
+                  <div className="text-xs text-[#94a3b8]">{allTools.length} tools</div>
                 </div>
               </div>
               {selectedCategory === 'all' && (
-                <div className="w-2 h-2 bg-[#00d4ff] rounded-full animate-pulse" />
+                <div className="w-2 h-2 bg-[#0ea5e9] rounded-full animate-pulse shadow-lg shadow-[rgba(14,165,233,0.5)]" />
               )}
             </button>
           </div>
@@ -248,51 +252,51 @@ export default function DashboardPage() {
               <div key={category.id} className="mb-2">
                 <div className={`rounded-lg overflow-hidden border-2 transition ${
                   isSelected
-                    ? 'border-[#00d4ff] bg-gradient-to-r from-[rgba(0,212,255,0.1)] to-[rgba(168,85,247,0.1)]'
-                    : 'border-transparent'
+                    ? 'border-[rgba(14,165,233,0.5)] bg-[rgba(14,165,233,0.1)] shadow-lg shadow-[rgba(14,165,233,0.15)]'
+                    : 'border-transparent hover:border-[rgba(255,255,255,0.05)]'
                 }`}>
                   <button
                     onClick={() => handleCategorySelect(category.id)}
                     className={`w-full flex items-center justify-between p-3 transition text-left group ${
-                      !isSelected && 'hover:bg-[rgba(0,212,255,0.1)]'
+                      !isSelected && 'hover:bg-[#18181f]'
                     }`}
                   >
                     <div className="flex items-center gap-3 flex-1">
                       <span className="text-2xl">{category.icon}</span>
                       <div className="flex-1">
-                        <div className={`font-semibold text-sm ${isSelected ? 'text-[#00d4ff]' : 'text-white'}`}>
+                        <div className={`font-semibold text-sm ${isSelected ? 'text-[#38bdf8]' : 'text-[#f8fafc]'}`}>
                           {category.name}
                         </div>
-                        <div className="text-xs text-gray-400">{categoryTools.length} tools</div>
+                        <div className="text-xs text-[#94a3b8]">{categoryTools.length} tools</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {isSelected && (
-                        <div className="w-2 h-2 bg-[#00d4ff] rounded-full animate-pulse" />
+                        <div className="w-2 h-2 bg-[#0ea5e9] rounded-full animate-pulse shadow-lg shadow-[rgba(14,165,233,0.5)]" />
                       )}
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
                           toggleCategory(category.id)
                         }}
-                        className="p-1 hover:bg-[rgba(255,255,255,0.1)] rounded transition"
+                        className="p-1 hover:bg-[rgba(255,255,255,0.08)] rounded transition"
                       >
                         {isCollapsed ? (
-                          <ChevronDown className="w-4 h-4 text-gray-400" />
+                          <ChevronDown className="w-4 h-4 text-[#cbd5e1]" />
                         ) : (
-                          <ChevronUp className="w-4 h-4 text-gray-400" />
+                          <ChevronUp className="w-4 h-4 text-[#cbd5e1]" />
                         )}
                       </button>
                     </div>
                   </button>
 
                   {!isCollapsed && (
-                    <div className="px-4 pb-3 space-y-1 bg-[rgba(0,0,0,0.2)]">
+                    <div className="px-4 pb-3 space-y-1 bg-[rgba(0,0,0,0.3)]">
                       {categoryTools.slice(0, 5).map((tool) => (
                         <Link
                           key={tool.id}
                           href={`/dashboard/tools/${tool.id}`}
-                          className="block p-2 pl-10 rounded text-sm text-gray-300 hover:text-[#00d4ff] hover:bg-[rgba(0,212,255,0.1)] transition"
+                          className="block p-2 pl-10 rounded text-sm text-[#cbd5e1] hover:text-[#38bdf8] hover:bg-[rgba(14,165,233,0.1)] transition"
                         >
                           <span className="mr-2">{tool.icon}</span>
                           {tool.name}
@@ -301,7 +305,7 @@ export default function DashboardPage() {
                       {categoryTools.length > 5 && (
                         <button
                           onClick={() => handleCategorySelect(category.id)}
-                          className="block w-full p-2 pl-10 rounded text-xs text-[#00d4ff] hover:underline text-left hover:bg-[rgba(0,212,255,0.05)] transition"
+                          className="block w-full p-2 pl-10 rounded text-xs text-[#0ea5e9] hover:underline text-left hover:bg-[rgba(14,165,233,0.08)] transition"
                         >
                           View all {categoryTools.length} →
                         </button>
@@ -315,26 +319,26 @@ export default function DashboardPage() {
         </div>
 
         {/* User Profile */}
-        <div className="p-4 border-t border-slate-200">
-          <div className="flex items-center gap-3 p-3 glass-card border-blue-200">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+        <div className="p-4 border-t border-[rgba(255,255,255,0.1)]">
+          <div className="flex items-center gap-3 p-3 glass-card border border-[rgba(14,165,233,0.3)]">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#0ea5e9] to-[#8b5cf6] rounded-full flex items-center justify-center text-white font-bold shadow-lg shadow-[rgba(14,165,233,0.3)]">
               {session.user?.name?.charAt(0).toUpperCase() || session.user?.email?.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-slate-900 truncate">{session.user?.name || 'User'}</div>
-              <div className="text-xs text-slate-500">{userTier}</div>
+              <div className="text-sm font-semibold text-[#f8fafc] truncate">{session.user?.name || 'User'}</div>
+              <div className="text-xs text-[#94a3b8]">{userTier}</div>
             </div>
-            <button onClick={handleLogout} className="p-2 hover:bg-slate-100 rounded transition" title="Logout">
-              <LogOut className="w-4 h-4 text-slate-500" />
+            <button onClick={handleLogout} className="p-2 hover:bg-[rgba(239,68,68,0.1)] hover:text-[#f87171] rounded transition" title="Logout">
+              <LogOut className="w-4 h-4 text-[#cbd5e1]" />
             </button>
           </div>
         </div>
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 flex flex-col overflow-hidden bg-[#080810]">
         {/* Top Header */}
-        <header className="glass-strong border-b border-slate-200 px-6 py-4">
+        <header className="bg-[#0d0d15] border-b border-[rgba(255,255,255,0.1)] px-6 py-4 shadow-lg">
           <div className="flex items-center justify-between">
             {/* Search */}
             <div className="flex-1 max-w-xl" ref={searchRef}>
@@ -350,20 +354,20 @@ export default function DashboardPage() {
                 <span className="absolute left-3 top-2.5 text-slate-400">🔍</span>
 
                 {searchOpen && filteredTools.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-blue-200 rounded-xl overflow-hidden shadow-2xl z-50">
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-[#12121a] border-2 border-[rgba(14,165,233,0.5)] rounded-xl overflow-hidden shadow-2xl z-50">
                     {filteredTools.map((tool) => (
                       <Link
                         key={tool.id}
                         href={`/dashboard/tools/${tool.id}`}
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition border-b border-slate-100 last:border-0"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-[rgba(14,165,233,0.1)] transition border-b border-[rgba(255,255,255,0.08)] last:border-0"
                         onClick={() => setSearchOpen(false)}
                       >
                         <span className="text-2xl">{tool.icon}</span>
                         <div className="flex-1">
-                          <div className="text-slate-900 font-semibold text-sm">{tool.name}</div>
-                          <div className="text-slate-600 text-xs">{tool.description}</div>
+                          <div className="text-[#f8fafc] font-semibold text-sm">{tool.name}</div>
+                          <div className="text-[#94a3b8] text-xs">{tool.description}</div>
                         </div>
-                        <ArrowRight className="w-4 h-4 text-blue-500" />
+                        <ArrowRight className="w-4 h-4 text-[#0ea5e9]" />
                       </Link>
                     ))}
                   </div>
@@ -373,11 +377,11 @@ export default function DashboardPage() {
 
             {/* Quick Actions */}
             <div className="flex items-center gap-3 ml-6">
-              <Link href="/pricing" className="flex items-center gap-2 px-4 py-2 glass hover:glass-strong rounded-lg transition text-sm text-slate-900">
+              <Link href="/pricing" className="flex items-center gap-2 px-4 py-2 bg-[#18181f] hover:bg-[#1d1d25] border border-[rgba(255,255,255,0.1)] hover:border-[rgba(14,165,233,0.5)] rounded-lg transition text-sm text-[#cbd5e1] hover:text-[#38bdf8]">
                 <CreditCard className="w-4 h-4" />
                 Pricing
               </Link>
-              <Link href="/settings" className="flex items-center gap-2 px-4 py-2 glass hover:glass-strong rounded-lg transition text-sm text-slate-900">
+              <Link href="/settings" className="flex items-center gap-2 px-4 py-2 bg-[#18181f] hover:bg-[#1d1d25] border border-[rgba(255,255,255,0.1)] hover:border-[rgba(14,165,233,0.5)] rounded-lg transition text-sm text-[#cbd5e1] hover:text-[#38bdf8]">
                 <Settings className="w-4 h-4" />
               </Link>
             </div>
@@ -385,37 +389,37 @@ export default function DashboardPage() {
         </header>
 
         {/* Main Content Area */}
-        <div ref={mainContentRef} className="flex-1 overflow-y-auto p-6">
+        <div ref={mainContentRef} className="flex-1 overflow-y-auto p-6 bg-[#080810]">
           {/* Welcome & Usage Banner */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome back, {session.user?.name || 'User'}! 👋</h1>
-            <p className="text-slate-600">Ready to process your documents?</p>
+            <h1 className="text-3xl font-bold text-[#f8fafc] mb-2">Welcome back, {session.user?.name || 'User'}! 👋</h1>
+            <p className="text-[#cbd5e1]">Ready to process your documents?</p>
           </div>
 
           {/* Usage Stats for FREE tier */}
           {userTier === 'FREE' && (
-            <div className="mb-6 glass-card border-2 border-blue-500">
+            <div className="mb-6 glass-card border-2 border-[rgba(14,165,233,0.5)] shadow-lg shadow-[rgba(14,165,233,0.2)]">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="font-bold text-slate-900 text-lg mb-1">Free Plan - Daily Limit</h3>
-                  <p className="text-sm text-slate-600">
-                    Today: <span className="text-slate-900 font-semibold">{dailyUsage} / {dailyLimit}</span> operations
+                  <h3 className="font-bold text-[#f8fafc] text-lg mb-1">Free Plan - Daily Limit</h3>
+                  <p className="text-sm text-[#cbd5e1]">
+                    Today: <span className="text-[#f8fafc] font-semibold">{dailyUsage} / {dailyLimit}</span> operations
                     <span className="mx-2">•</span>
-                    This month: <span className="text-slate-900 font-semibold">{monthlyUsage} / {monthlyLimit}</span> operations
+                    This month: <span className="text-[#f8fafc] font-semibold">{monthlyUsage} / {monthlyLimit}</span> operations
                   </p>
                 </div>
-                <Link href="/pricing" className="btn-neon px-6 py-2">
+                <Link href="/pricing" className="btn-primary px-6 py-2">
                   Upgrade to Pro
                 </Link>
               </div>
-              <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-[#0d0d15] rounded-full h-3 overflow-hidden border border-[rgba(255,255,255,0.1)]">
                 <div
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 transition-all duration-500"
+                  className="bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] h-3 transition-all duration-500 shadow-lg shadow-[rgba(14,165,233,0.5)]"
                   style={{ width: `${Math.min(usagePercentage, 100)}%` }}
                 />
               </div>
               {usagePercentage > 80 && (
-                <div className="mt-3 text-sm text-yellow-600 flex items-center gap-2">
+                <div className="mt-3 text-sm text-[#fbbf24] flex items-center gap-2">
                   <Zap className="w-4 h-4" />
                   You're running low on operations! Upgrade for unlimited access.
                 </div>
@@ -427,61 +431,61 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <Link
               href="/dashboard/workflow/upload"
-              className="glass-card hover:border-[#00d4ff] group transition-all"
+              className="glass-card hover:border-[rgba(14,165,233,0.5)] group transition-all"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#00d4ff] to-[#a855f7] rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#0ea5e9] to-[#8b5cf6] rounded-lg flex items-center justify-center shadow-lg shadow-[rgba(14,165,233,0.3)]">
                   <Upload className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <div className="text-white font-semibold mb-1 group-hover:text-[#00d4ff] transition">
+                  <div className="text-[#f8fafc] font-semibold mb-1 group-hover:text-[#38bdf8] transition">
                     Upload & Process
                   </div>
-                  <div className="text-sm text-gray-400">
+                  <div className="text-sm text-[#94a3b8]">
                     Upload first, then choose tool
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-[#00d4ff] group-hover:translate-x-1 transition-all" />
+                <ArrowRight className="w-5 h-5 text-[#94a3b8] group-hover:text-[#0ea5e9] group-hover:translate-x-1 transition-all" />
               </div>
             </Link>
 
             <Link
               href="/dashboard/bulk"
-              className="glass-card hover:border-[#00d4ff] group transition-all"
+              className="glass-card hover:border-[rgba(16,185,129,0.5)] group transition-all"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#00ff88] to-[#00d4ff] rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#10b981] to-[#06b6d4] rounded-lg flex items-center justify-center shadow-lg shadow-[rgba(16,185,129,0.3)]">
                   <Layers className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <div className="text-white font-semibold mb-1 group-hover:text-[#00d4ff] transition">
+                  <div className="text-[#f8fafc] font-semibold mb-1 group-hover:text-[#34d399] transition">
                     Bulk Processing
                   </div>
-                  <div className="text-sm text-gray-400">
+                  <div className="text-sm text-[#94a3b8]">
                     Process multiple files at once
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-[#00d4ff] group-hover:translate-x-1 transition-all" />
+                <ArrowRight className="w-5 h-5 text-[#94a3b8] group-hover:text-[#10b981] group-hover:translate-x-1 transition-all" />
               </div>
             </Link>
 
             <Link
               href="/dashboard/history"
-              className="glass-card hover:border-[#00d4ff] group transition-all"
+              className="glass-card hover:border-[rgba(139,92,246,0.5)] group transition-all"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#a855f7] to-[#ff00ff] rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#8b5cf6] to-[#a78bfa] rounded-lg flex items-center justify-center shadow-lg shadow-[rgba(139,92,246,0.3)]">
                   <History className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <div className="text-white font-semibold mb-1 group-hover:text-[#00d4ff] transition">
+                  <div className="text-[#f8fafc] font-semibold mb-1 group-hover:text-[#a78bfa] transition">
                     Processing History
                   </div>
-                  <div className="text-sm text-gray-400">
+                  <div className="text-sm text-[#94a3b8]">
                     View past jobs and downloads
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-[#00d4ff] group-hover:translate-x-1 transition-all" />
+                <ArrowRight className="w-5 h-5 text-[#94a3b8] group-hover:text-[#8b5cf6] group-hover:translate-x-1 transition-all" />
               </div>
             </Link>
           </div>
@@ -609,10 +613,10 @@ export default function DashboardPage() {
       </main>
 
       {/* RIGHT MINI PANEL - Notifications & Activity */}
-      <aside className="w-80 glass-strong border-l border-[rgba(255,255,255,0.2)] flex flex-col overflow-hidden">
-        <div className="p-4 border-b border-[rgba(255,255,255,0.2)]">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <Bell className="w-5 h-5" />
+      <aside className="w-80 bg-[#0d0d15] border-l border-[rgba(255,255,255,0.1)] flex flex-col overflow-hidden shadow-2xl">
+        <div className="p-4 border-b border-[rgba(255,255,255,0.1)]">
+          <h3 className="text-lg font-bold text-[#f8fafc] flex items-center gap-2">
+            <Bell className="w-5 h-5 text-[#0ea5e9]" />
             Recent Activity
           </h3>
         </div>
@@ -621,18 +625,18 @@ export default function DashboardPage() {
           {activity.length > 0 ? (
             <div className="space-y-3">
               {activity.map((item) => (
-                <div key={item.id} className="glass p-3 rounded-lg border border-[rgba(255,255,255,0.1)]">
+                <div key={item.id} className="glass p-3 rounded-lg border border-[rgba(255,255,255,0.08)] hover:border-[rgba(14,165,233,0.3)] transition">
                   <div className="flex items-start gap-3">
-                    <div className={`w-2 h-2 rounded-full mt-2 ${
-                      item.status === 'completed' ? 'bg-[#00ff88]' :
-                      item.status === 'processing' ? 'bg-[#00d4ff]' :
-                      'bg-[#ff0055]'
+                    <div className={`w-2 h-2 rounded-full mt-2 shadow-lg ${
+                      item.status === 'completed' ? 'bg-[#10b981] shadow-[rgba(16,185,129,0.5)]' :
+                      item.status === 'processing' ? 'bg-[#0ea5e9] shadow-[rgba(14,165,233,0.5)]' :
+                      'bg-[#ef4444] shadow-[rgba(239,68,68,0.5)]'
                     }`} />
                     <div className="flex-1">
-                      <div className="text-sm text-white font-medium mb-1">
+                      <div className="text-sm text-[#f8fafc] font-medium mb-1">
                         {item.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                       </div>
-                      <div className="text-xs text-gray-400 flex items-center gap-1">
+                      <div className="text-xs text-[#94a3b8] flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         {new Date(item.createdAt).toLocaleTimeString()}
                       </div>
@@ -642,7 +646,7 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 text-gray-400">
+            <div className="text-center py-12 text-[#94a3b8]">
               <Bell className="w-12 h-12 mx-auto mb-3 opacity-20" />
               <p className="text-sm">No recent activity</p>
               <p className="text-xs mt-1">Your processed documents will appear here</p>
@@ -652,15 +656,15 @@ export default function DashboardPage() {
 
         {/* Upgrade CTA */}
         {userTier === 'FREE' && (
-          <div className="p-4 border-t border-[rgba(255,255,255,0.2)]">
-            <div className="glass-card bg-gradient-to-br from-[rgba(0,212,255,0.1)] to-[rgba(168,85,247,0.1)] border-[rgba(0,212,255,0.3)]">
+          <div className="p-4 border-t border-[rgba(255,255,255,0.1)]">
+            <div className="glass-card bg-gradient-to-br from-[rgba(14,165,233,0.1)] to-[rgba(139,92,246,0.1)] border-[rgba(14,165,233,0.3)] shadow-lg shadow-[rgba(14,165,233,0.2)]">
               <div className="text-center">
                 <div className="text-3xl mb-2">🚀</div>
-                <h4 className="font-bold text-white mb-2">Upgrade to Pro</h4>
-                <p className="text-xs text-gray-300 mb-3">
+                <h4 className="font-bold text-[#f8fafc] mb-2">Upgrade to Pro</h4>
+                <p className="text-xs text-[#cbd5e1] mb-3">
                   Get 1000 operations/month and priority processing
                 </p>
-                <Link href="/pricing" className="btn-neon w-full block text-center py-2">
+                <Link href="/pricing" className="btn-primary w-full block text-center py-2">
                   See Plans
                 </Link>
               </div>

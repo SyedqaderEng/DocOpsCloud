@@ -115,33 +115,33 @@ export default function Sidebar() {
     <>
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen bg-gradient-to-b from-[rgba(0,0,0,0.95)] to-[rgba(20,20,40,0.95)] backdrop-blur-xl border-r border-gray-800 transition-all duration-300 z-50 ${
+        className={`fixed left-0 top-0 h-screen bg-gradient-to-b from-[#080810] via-[#0d0d15] to-[#12121a] backdrop-blur-xl border-r border-[rgba(255,255,255,0.1)] transition-all duration-300 z-50 ${
           collapsed ? 'w-20' : 'w-64'
         }`}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="p-6 border-b border-gray-800">
+          <div className="p-6 border-b border-[rgba(255,255,255,0.1)]">
             <div className="flex items-center justify-between">
               {!collapsed && (
                 <Link href="/dashboard" className="flex items-center gap-2">
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#00d4ff] to-[#a855f7] rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#0ea5e9] to-[#8b5cf6] rounded-lg flex items-center justify-center shadow-lg shadow-[rgba(14,165,233,0.3)]">
                     <FileText className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h1 className="text-white font-bold text-lg">DocOps</h1>
-                    <p className="text-xs text-gray-400">Cloud Platform</p>
+                    <h1 className="text-[#f8fafc] font-bold text-lg tracking-tight">DocOps</h1>
+                    <p className="text-xs text-[#94a3b8]">Cloud Platform</p>
                   </div>
                 </Link>
               )}
               <button
                 onClick={() => setCollapsed(!collapsed)}
-                className="p-2 hover:bg-[rgba(255,255,255,0.1)] rounded-lg transition"
+                className="p-2 hover:bg-[rgba(255,255,255,0.08)] rounded-lg transition"
               >
                 {collapsed ? (
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                  <ChevronRight className="w-5 h-5 text-[#cbd5e1]" />
                 ) : (
-                  <ChevronLeft className="w-5 h-5 text-gray-400" />
+                  <ChevronLeft className="w-5 h-5 text-[#cbd5e1]" />
                 )}
               </button>
             </div>
@@ -159,8 +159,8 @@ export default function Sidebar() {
                   href={item.href}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition group ${
                     active
-                      ? 'bg-gradient-to-r from-[#00d4ff] to-[#a855f7] text-white'
-                      : 'text-gray-300 hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                      ? 'bg-[rgba(14,165,233,0.15)] text-[#38bdf8] border border-[rgba(14,165,233,0.5)] shadow-lg shadow-[rgba(14,165,233,0.2)]'
+                      : 'text-[#cbd5e1] hover:bg-[#18181f] hover:text-[#f8fafc] border border-transparent hover:border-[rgba(255,255,255,0.08)]'
                   }`}
                   title={collapsed ? item.name : undefined}
                 >
@@ -171,8 +171,8 @@ export default function Sidebar() {
                       {item.badge && (
                         <span
                           className={`px-2 py-0.5 ${
-                            item.badgeColor || 'bg-[#00d4ff]'
-                          } text-white text-xs rounded-full font-semibold`}
+                            item.badgeColor || 'bg-[#10b981]'
+                          } text-white text-xs rounded-full font-semibold shadow-lg`}
                         >
                           {item.badge}
                         </span>
@@ -185,7 +185,7 @@ export default function Sidebar() {
           </nav>
 
           {/* User Section */}
-          <div className="p-4 border-t border-gray-800 space-y-2">
+          <div className="p-4 border-t border-[rgba(255,255,255,0.1)] space-y-2">
             {bottomNavigation.map((item) => {
               const Icon = item.icon
               const active = isActive(item.href)
@@ -196,8 +196,8 @@ export default function Sidebar() {
                   href={item.href}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition ${
                     active
-                      ? 'bg-gradient-to-r from-[#00d4ff] to-[#a855f7] text-white'
-                      : 'text-gray-300 hover:bg-[rgba(255,255,255,0.05)] hover:text-white'
+                      ? 'bg-[rgba(14,165,233,0.15)] text-[#38bdf8] border border-[rgba(14,165,233,0.5)] shadow-lg shadow-[rgba(14,165,233,0.2)]'
+                      : 'text-[#cbd5e1] hover:bg-[#18181f] hover:text-[#f8fafc] border border-transparent hover:border-[rgba(255,255,255,0.08)]'
                   }`}
                   title={collapsed ? item.name : undefined}
                 >
@@ -210,7 +210,7 @@ export default function Sidebar() {
             {user && (
               <button
                 onClick={logout}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-[rgba(255,0,85,0.1)] hover:text-[#ff0055] transition"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#cbd5e1] hover:bg-[rgba(239,68,68,0.1)] hover:text-[#f87171] border border-transparent hover:border-[rgba(239,68,68,0.3)] transition"
                 title={collapsed ? 'Logout' : undefined}
               >
                 <LogOut className="w-5 h-5 flex-shrink-0" />
@@ -219,9 +219,9 @@ export default function Sidebar() {
             )}
 
             {!collapsed && user && (
-              <div className="mt-4 p-3 glass-strong rounded-lg">
-                <p className="text-xs text-gray-400 mb-1">Logged in as</p>
-                <p className="text-sm text-white font-semibold truncate">{user.email}</p>
+              <div className="mt-4 p-3 glass-strong rounded-lg border border-[rgba(255,255,255,0.08)]">
+                <p className="text-xs text-[#94a3b8] mb-1">Logged in as</p>
+                <p className="text-sm text-[#f8fafc] font-semibold truncate">{user.email}</p>
               </div>
             )}
           </div>
