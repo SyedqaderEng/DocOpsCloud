@@ -2,6 +2,7 @@ import { BaseProcessor } from './base-processor'
 import { pdfCoreService } from '@/modules/pdf/services/core'
 import { pdfSecurityService } from '@/modules/pdf/services/security'
 import { pdfCompressionService } from '@/modules/pdf/services/compression'
+import { pdfTextExtractionService } from '@/modules/pdf/services/text-extraction'
 
 export class PdfProcessor extends BaseProcessor {
   /**
@@ -153,8 +154,8 @@ export class PdfProcessor extends BaseProcessor {
   async rotatePdf(
     fileId: string,
     userId: string,
-    pageNumbers: number[],
-    rotation: 90 | 180 | 270
+    rotation: 90 | 180 | 270,
+    pageNumbers?: number[]
   ): Promise<{ fileId: string; url: string }> {
     this.log('Starting PDF rotation', { fileId, pageNumbers, rotation })
 
@@ -162,7 +163,7 @@ export class PdfProcessor extends BaseProcessor {
     const pdfBuffer = await this.downloadFile(fileId)
 
     // Rotate pages using core service
-    const rotatedBuffer = await pdfCoreService.rotatePages(pdfBuffer, pageNumbers, rotation)
+    const rotatedBuffer = await pdfCoreService.rotatePdf(pdfBuffer, rotation, pageNumbers)
 
     // Upload rotated PDF
     const result = await this.uploadFile(userId, 'rotated.pdf', rotatedBuffer, 'application/pdf')
@@ -185,8 +186,9 @@ export class PdfProcessor extends BaseProcessor {
     await this.validateInputFile(fileId)
     const pdfBuffer = await this.downloadFile(fileId)
 
-    // Extract pages using core service
-    const extractedBuffer = await pdfCoreService.extractPages(pdfBuffer, pageNumbers)
+    // Extract pages using split service with page ranges
+    const pageRanges = pageNumbers.map((pageNum) => ({ start: pageNum, end: pageNum }))
+    const [extractedBuffer] = await pdfCoreService.splitPdf(pdfBuffer, pageRanges)
 
     // Upload extracted PDF
     const result = await this.uploadFile(
@@ -214,8 +216,8 @@ export class PdfProcessor extends BaseProcessor {
     await this.validateInputFile(fileId)
     const pdfBuffer = await this.downloadFile(fileId)
 
-    // Add page numbers using security service
-    const numberedBuffer = await pdfSecurityService.addPageNumbers(pdfBuffer, options)
+    // Add page numbers using core service
+    const numberedBuffer = await pdfCoreService.addPageNumbers(pdfBuffer, options)
 
     // Upload numbered PDF
     const result = await this.uploadFile(
@@ -228,5 +230,74 @@ export class PdfProcessor extends BaseProcessor {
     this.log('PDF page numbering complete', { outputFileId: result.fileId })
 
     return result
+  }
+
+  /**
+   * Get/Set PDF metadata
+   */
+  async getMetadata(fileId: string): Promise<any> {
+    this.log('Getting PDF metadata', { fileId })
+
+    await this.validateInputFile(fileId)
+    const pdfBuffer = await this.downloadFile(fileId)
+
+    const metadata = await pdfCoreService.getMetadata(pdfBuffer)
+
+    this.log('PDF metadata retrieved', { metadata })
+
+    return metadata
+  }
+
+  async setMetadata(
+    fileId: string,
+    userId: string,
+    metadata: any
+  ): Promise<{ fileId: string; url: string }> {
+    this.log('Setting PDF metadata', { fileId, metadata })
+
+    await this.validateInputFile(fileId)
+    const pdfBuffer = await this.downloadFile(fileId)
+
+    // Set metadata using core service
+    const updatedBuffer = await pdfCoreService.setMetadata(pdfBuffer, metadata)
+
+    // Upload updated PDF
+    const result = await this.uploadFile(userId, 'updated.pdf', updatedBuffer, 'application/pdf')
+
+    this.log('PDF metadata updated', { outputFileId: result.fileId })
+
+    return result
+  }
+
+  /**
+   * Extract text from PDF
+   */
+  async extractText(fileId: string): Promise<{ text: string; pages: any[] }> {
+    this.log('Extracting text from PDF', { fileId })
+
+    await this.validateInputFile(fileId)
+    const pdfBuffer = await this.downloadFile(fileId)
+
+    const result = await pdfTextExtractionService.extractText(pdfBuffer)
+
+    this.log('PDF text extracted', { pageCount: result.pages.length })
+
+    return result
+  }
+
+  /**
+   * Search text in PDF
+   */
+  async searchText(fileId: string, query: string, caseSensitive: boolean = false): Promise<any[]> {
+    this.log('Searching text in PDF', { fileId, query })
+
+    await this.validateInputFile(fileId)
+    const pdfBuffer = await this.downloadFile(fileId)
+
+    const results = await pdfTextExtractionService.searchText(pdfBuffer, query, caseSensitive)
+
+    this.log('PDF text search complete', { resultsCount: results.length })
+
+    return results
   }
 }
