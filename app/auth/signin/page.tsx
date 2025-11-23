@@ -2,57 +2,72 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import Link from 'next/link'
-import { useAuth } from '@/lib/firebase/AuthContext'
 import { Mail, Lock, Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react'
 
 export default function SignInPage() {
   const router = useRouter()
-  const { signIn, signInGoogle, signInGithub, error, loading, clearError } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [localError, setLocalError] = useState('')
-
-  const getRedirectUrl = () => {
-    const redirectUrl = sessionStorage.getItem('redirectAfterLogin')
-    sessionStorage.removeItem('redirectAfterLogin')
-    return redirectUrl || '/dashboard'
-  }
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLocalError('')
-    clearError()
+    setError('')
 
     if (!email || !password) {
-      setLocalError('Please fill in all fields')
+      setError('Please fill in all fields')
       return
     }
 
+    setLoading(true)
+
     try {
-      await signIn(email, password)
-      router.push(getRedirectUrl())
-    } catch {
-      // Error handled by context
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        setError(result.error === 'CredentialsSignin'
+          ? 'Invalid email or password'
+          : result.error)
+      } else {
+        const redirectUrl = sessionStorage.getItem('redirectAfterLogin') || '/dashboard'
+        sessionStorage.removeItem('redirectAfterLogin')
+        router.push(redirectUrl)
+        router.refresh()
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign in')
+    } finally {
+      setLoading(false)
     }
   }
 
   const handleGoogleSignIn = async () => {
+    setError('')
+    setLoading(true)
     try {
-      await signInGoogle()
-      router.push(getRedirectUrl())
-    } catch {
-      // Error handled by context
+      await signIn('google', { callbackUrl: '/dashboard' })
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign in with Google')
+      setLoading(false)
     }
   }
 
   const handleGithubSignIn = async () => {
+    setError('')
+    setLoading(true)
     try {
-      await signInGithub()
-      router.push(getRedirectUrl())
-    } catch {
-      // Error handled by context
+      await signIn('github', { callbackUrl: '/dashboard' })
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign in with GitHub')
+      setLoading(false)
     }
   }
 
@@ -115,9 +130,9 @@ export default function SignInPage() {
           </div>
 
           {/* Error Message */}
-          {(error || localError) && (
+          {error && (
             <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
-              {error || localError}
+              {error}
             </div>
           )}
 
