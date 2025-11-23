@@ -1,6 +1,6 @@
 // Integration Service - Helper functions for managing integration connections
 
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db/prisma'
 import { getIntegrationById } from './providers'
 import { CredentialEncryption } from './oauth/provider'
 

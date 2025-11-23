@@ -1,6 +1,6 @@
 // Database Query Optimizer
 
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db/prisma'
 import { performanceMonitor } from '@/lib/monitoring/performance'
 
 export interface QueryAnalysis {

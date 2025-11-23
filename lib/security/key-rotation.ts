@@ -1,6 +1,6 @@
 // Key Rotation System
 
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db/prisma'
 import { encryption } from './encryption'
 
 export interface KeyRotationStatus {

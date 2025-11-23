@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireUser } from '@/lib/auth/session'
 import { prisma } from '@/lib/db/prisma'
 import { z } from 'zod'
-import bcrypt from 'bcryptjs'
+import bcrypt from 'bcrypt'
 
 const createShareLinkSchema = z.object({
   fileId: z.string().cuid(),

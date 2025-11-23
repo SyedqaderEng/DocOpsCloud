@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/prisma'
 import { z } from 'zod'
-import bcrypt from 'bcryptjs'
+import bcrypt from 'bcrypt'
 
 const accessShareLinkSchema = z.object({
   password: z.string().optional(),

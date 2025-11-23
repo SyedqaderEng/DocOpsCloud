@@ -1,6 +1,6 @@
 // GDPR Compliance Tools
 
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db/prisma'
 import { encryption } from '@/lib/security/encryption'
 import * as fs from 'fs/promises'
 import * as path from 'path'

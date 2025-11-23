@@ -1,6 +1,6 @@
 // HIPAA Compliance Tools
 
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db/prisma'
 import { encryption } from '@/lib/security/encryption'
 
 export interface PHIAccessLog {

@@ -1,6 +1,6 @@
 // Performance Monitoring Service
 
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db/prisma'
 
 export interface PerformanceMetric {
   operation: string

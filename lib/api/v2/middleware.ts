@@ -1,7 +1,7 @@
 // API v2 Middleware
 
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db/prisma'
 import { APIv2Response, APIErrorCodes } from './base'
 
 interface RateLimitConfig {
