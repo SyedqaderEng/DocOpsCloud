@@ -1,58 +1,42 @@
 /**
  * Worker Startup Script
- * Starts all BullMQ workers to process jobs
+ * Starts the Universal Job Processor Worker
  */
 
-import { PdfWorker } from '../lib/queue/workers/pdf-worker'
-import { WordWorker } from '../lib/queue/workers/word-worker'
-import { ExcelWorker } from '../lib/queue/workers/excel-worker'
-import { ImageWorker } from '../lib/queue/workers/image-worker'
+import { startWorker } from '../lib/workers/job-processor.worker'
 
-console.log('🚀 Starting DocOpsCloud Workers...')
-console.log('================================')
+async function main() {
+  console.log('===========================================')
+  console.log('  DocOpsCloud Universal Job Processor')
+  console.log('===========================================\n')
 
-// Start all workers
-const pdfWorker = new PdfWorker()
-console.log('✓ PDF Worker started')
+  console.log('🚀 Starting worker...\n')
 
-const wordWorker = new WordWorker()
-console.log('✓ Word Worker started')
+  // Start the universal job processor worker
+  const worker = startWorker()
 
-const excelWorker = new ExcelWorker()
-console.log('✓ Excel Worker started')
+  console.log('✅ Worker started successfully')
+  console.log('📊 Processing jobs from queue: file-processing')
+  console.log('🔧 Available engines: PDFEngine')
+  console.log('\nPress Ctrl+C to stop worker\n')
 
-const imageWorker = new ImageWorker()
-console.log('✓ Image Worker started')
+  // Graceful shutdown
+  process.on('SIGTERM', async () => {
+    console.log('\n🛑 Received SIGTERM, shutting down gracefully...')
+    await worker.shutdown()
+    console.log('✓ Worker closed')
+    process.exit(0)
+  })
 
-console.log('================================')
-console.log('✅ All workers running!')
-console.log('Press Ctrl+C to stop')
+  process.on('SIGINT', async () => {
+    console.log('\n🛑 Received SIGINT, shutting down gracefully...')
+    await worker.shutdown()
+    console.log('✓ Worker closed')
+    process.exit(0)
+  })
+}
 
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('\n🛑 Received SIGTERM, shutting down gracefully...')
-
-  await Promise.all([
-    pdfWorker.close?.(),
-    wordWorker.close?.(),
-    excelWorker.close?.(),
-    imageWorker.close?.(),
-  ])
-
-  console.log('✓ All workers closed')
-  process.exit(0)
-})
-
-process.on('SIGINT', async () => {
-  console.log('\n🛑 Received SIGINT, shutting down gracefully...')
-
-  await Promise.all([
-    pdfWorker.close?.(),
-    wordWorker.close?.(),
-    excelWorker.close?.(),
-    imageWorker.close?.(),
-  ])
-
-  console.log('✓ All workers closed')
-  process.exit(0)
+main().catch((error) => {
+  console.error('❌ Failed to start worker:', error)
+  process.exit(1)
 })

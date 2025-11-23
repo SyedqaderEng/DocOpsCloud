@@ -1,0 +1,280 @@
+{
+  "pdf_split": {
+    "category": "pdf",
+    "engine": "PDFEngine",
+    "operation": "split",
+    "params": {
+      "pages": {
+        "type": "array",
+        "required": true,
+        "items": {
+          "type": "number"
+        }
+      }
+    },
+    "description": "Split PDF by extracting specific pages"
+  },
+
+  "pdf_merge": {
+    "category": "pdf",
+    "engine": "PDFEngine",
+    "operation": "merge",
+    "params": {
+      "additionalFiles": {
+        "type": "array",
+        "required": true
+      }
+    },
+    "description": "Merge multiple PDF files into one"
+  },
+
+  "pdf_compress": {
+    "category": "pdf",
+    "engine": "PDFEngine",
+    "operation": "compress",
+    "params": {
+      "level": {
+        "type": "enum",
+        "values": ["low", "medium", "high"],
+        "default": "medium"
+      }
+    },
+    "description": "Compress PDF file size"
+  },
+
+  "pdf_rotate_90": {
+    "category": "pdf",
+    "engine": "PDFEngine",
+    "operation": "rotate",
+    "params": {
+      "degrees": {
+        "type": "number",
+        "value": 90,
+        "required": true
+      },
+      "pages": {
+        "type": "array",
+        "required": false,
+        "items": {
+          "type": "number"
+        }
+      }
+    },
+    "description": "Rotate PDF pages 90 degrees clockwise"
+  },
+
+  "pdf_rotate_180": {
+    "category": "pdf",
+    "engine": "PDFEngine",
+    "operation": "rotate",
+    "params": {
+      "degrees": {
+        "type": "number",
+        "value": 180,
+        "required": true
+      },
+      "pages": {
+        "type": "array",
+        "required": false,
+        "items": {
+          "type": "number"
+        }
+      }
+    },
+    "description": "Rotate PDF pages 180 degrees"
+  },
+
+  "pdf_rotate_270": {
+    "category": "pdf",
+    "engine": "PDFEngine",
+    "operation": "rotate",
+    "params": {
+      "degrees": {
+        "type": "number",
+        "value": 270,
+        "required": true
+      },
+      "pages": {
+        "type": "array",
+        "required": false,
+        "items": {
+          "type": "number"
+        }
+      }
+    },
+    "description": "Rotate PDF pages 270 degrees (90 degrees counter-clockwise)"
+  },
+
+  "pdf_watermark": {
+    "category": "pdf",
+    "engine": "PDFEngine",
+    "operation": "watermark",
+    "params": {
+      "text": {
+        "type": "string",
+        "required": true
+      },
+      "position": {
+        "type": "enum",
+        "values": ["center", "top-left", "top-right", "bottom-left", "bottom-right"],
+        "default": "center"
+      },
+      "opacity": {
+        "type": "number",
+        "min": 0,
+        "max": 1,
+        "default": 0.5
+      },
+      "fontSize": {
+        "type": "number",
+        "min": 8,
+        "max": 72,
+        "default": 48
+      }
+    },
+    "description": "Add watermark text to PDF pages"
+  },
+
+  "pdf_extract_text": {
+    "category": "pdf",
+    "engine": "PDFEngine",
+    "operation": "extract-text",
+    "params": {
+      "pages": {
+        "type": "array",
+        "required": false,
+        "items": {
+          "type": "number"
+        }
+      }
+    },
+    "description": "Extract text content from PDF"
+  },
+
+  "pdf_add_page_numbers": {
+    "category": "pdf",
+    "engine": "PDFEngine",
+    "operation": "add-page-numbers",
+    "params": {
+      "position": {
+        "type": "enum",
+        "values": ["top-left", "top-center", "top-right", "bottom-left", "bottom-center", "bottom-right"],
+        "default": "bottom-center"
+      },
+      "format": {
+        "type": "enum",
+        "values": ["number", "page-X", "page-X-of-Y"],
+        "default": "page-X-of-Y"
+      },
+      "fontSize": {
+        "type": "number",
+        "min": 8,
+        "max": 20,
+        "default": 10
+      },
+      "startPage": {
+        "type": "number",
+        "min": 1,
+        "default": 1
+      },
+      "startNumber": {
+        "type": "number",
+        "min": 1,
+        "default": 1
+      }
+    },
+    "description": "Add page numbers to PDF"
+  },
+
+  "pdf_remove_pages": {
+    "category": "pdf",
+    "engine": "PDFEngine",
+    "operation": "remove-pages",
+    "params": {
+      "pages": {
+        "type": "array",
+        "required": true,
+        "items": {
+          "type": "number"
+        }
+      }
+    },
+    "description": "Remove specific pages from PDF"
+  },
+
+  "pdf_reorder_pages": {
+    "category": "pdf",
+    "engine": "PDFEngine",
+    "operation": "reorder-pages",
+    "params": {
+      "order": {
+        "type": "array",
+        "required": true,
+        "items": {
+          "type": "number"
+        }
+      }
+    },
+    "description": "Reorder PDF pages in a custom sequence"
+  },
+
+  "pdf_get_metadata": {
+    "category": "pdf",
+    "engine": "PDFEngine",
+    "operation": "get-metadata",
+    "params": {},
+    "description": "Get PDF metadata (title, author, subject, etc.)"
+  },
+
+  "pdf_set_metadata": {
+    "category": "pdf",
+    "engine": "PDFEngine",
+    "operation": "set-metadata",
+    "params": {
+      "title": {
+        "type": "string",
+        "required": false
+      },
+      "author": {
+        "type": "string",
+        "required": false
+      },
+      "subject": {
+        "type": "string",
+        "required": false
+      },
+      "keywords": {
+        "type": "array",
+        "required": false,
+        "items": {
+          "type": "string"
+        }
+      },
+      "creator": {
+        "type": "string",
+        "required": false
+      },
+      "producer": {
+        "type": "string",
+        "required": false
+      }
+    },
+    "description": "Set PDF metadata (title, author, subject, etc.)"
+  },
+
+  "pdf_extract_pages": {
+    "category": "pdf",
+    "engine": "PDFEngine",
+    "operation": "extract-pages",
+    "params": {
+      "pages": {
+        "type": "array",
+        "required": true,
+        "items": {
+          "type": "number"
+        }
+      }
+    },
+    "description": "Extract specific pages from PDF to a new document"
+  }
+}
