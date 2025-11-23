@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getIntegrationById } from '@/lib/integrations/providers'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db/prisma'
 import { CredentialEncryption } from '@/lib/integrations/oauth/provider'
 
 const encryption = new CredentialEncryption()

@@ -1,10 +1,115 @@
 'use client'
 
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { Search, Upload, ArrowRight, X, Menu, ChevronDown, Zap } from 'lucide-react'
+import { TOOL_CATEGORIES, getAllTools, getTotalToolCount } from '@/lib/tools-data'
 
 export default function HomePage() {
+  const router = useRouter()
+  const [user, setUser] = useState<any>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
+  const [showToolSelection, setShowToolSelection] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const searchRef = useRef<HTMLDivElement>(null)
+
+  const allTools = getAllTools()
+  const totalTools = getTotalToolCount()
+
+  // Close search dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setSearchOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const filteredTools = searchQuery.length > 0
+    ? allTools.filter(tool =>
+        tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tool.description.toLowerCase().includes(searchQuery.toLowerCase())
+      ).slice(0, 10)
+    : []
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = () => {
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+
+    const files = Array.from(e.dataTransfer.files)
+    if (files.length > 0) {
+      setUploadedFiles(files)
+      setShowToolSelection(true)
+    }
+  }
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files && files.length > 0) {
+      setUploadedFiles(Array.from(files))
+      setShowToolSelection(true)
+    }
+  }
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index))
+    if (uploadedFiles.length === 1) {
+      setShowToolSelection(false)
+    }
+  }
+
+  const getFileIcon = (file: File) => {
+    const ext = file.name.split('.').pop()?.toLowerCase()
+    if (['pdf'].includes(ext || '')) return <span className="text-2xl">📄</span>
+    if (['doc', 'docx'].includes(ext || '')) return <span className="text-2xl">📝</span>
+    if (['xls', 'xlsx', 'csv'].includes(ext || '')) return <span className="text-2xl">📊</span>
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) return <span className="text-2xl">🖼️</span>
+    return <span className="text-2xl">📄</span>
+  }
+
+  const getRecommendedTools = () => {
+    if (uploadedFiles.length === 0) return []
+
+    const firstFile = uploadedFiles[0]
+    const ext = firstFile.name.split('.').pop()?.toLowerCase()
+
+    if (ext === 'pdf') {
+      return allTools.filter(t => ['pdf-merge', 'pdf-split', 'pdf-compress', 'pdf-to-word', 'pdf-watermark', 'pdf-rotate'].includes(t.id))
+    } else if (['doc', 'docx'].includes(ext || '')) {
+      return allTools.filter(t => ['word-to-pdf', 'word-merge', 'word-compress', 'word-to-html', 'word-watermark', 'word-split'].includes(t.id))
+    } else if (['xls', 'xlsx'].includes(ext || '')) {
+      return allTools.filter(t => ['excel-to-csv', 'excel-merge', 'excel-to-pdf', 'excel-to-json', 'csv-clean', 'excel-compress'].includes(t.id))
+    } else if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) {
+      return allTools.filter(t => ['image-compress', 'image-resize', 'image-convert', 'image-crop', 'image-watermark', 'image-optimize'].includes(t.id))
+    }
+
+    return allTools.slice(0, 6)
+  }
+
+  const navigateToTool = (toolId: string) => {
+    router.push(user ? `/dashboard/tools/${toolId}` : `/tools/${toolId}`)
+  }
+
   return (
-    <div className="min-h-screen" style={{ background: 'var(--bg-base)' }}>
+    <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
       {/* Navigation */}
       <nav className="sticky top-0 z-50 top-nav">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -43,7 +148,7 @@ export default function HomePage() {
                         key={tool.id}
                         href={user ? `/dashboard/tools/${tool.id}` : `/tools/${tool.id}`}
                         className="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition border-b last:border-0 cursor-pointer"
-                        style={{ borderColor: 'var(--shadow-dark)' }}
+                        style={{ borderColor: 'var(--border-subtle)' }}
                         onClick={() => setSearchOpen(false)}
                       >
                         <span className="text-2xl">{tool.icon}</span>
@@ -51,7 +156,7 @@ export default function HomePage() {
                           <div className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{tool.name}</div>
                           <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{tool.description}</div>
                         </div>
-                        <ArrowRight className="w-4 h-4" style={{ color: 'var(--accent-sage)' }} />
+                        <ArrowRight className="w-4 h-4" style={{ color: 'var(--finance-blue)' }} />
                       </Link>
                     ))}
                   </div>
@@ -76,7 +181,7 @@ export default function HomePage() {
                           <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{tool.name}</span>
                         </Link>
                       ))}
-                      <Link href="/tools" className="text-xs hover:underline px-3 py-2 mt-1" style={{ color: 'var(--accent-sage)' }}>View all PDF tools →</Link>
+                      <Link href="/tools" className="text-xs hover:underline px-3 py-2 mt-1" style={{ color: 'var(--finance-blue)' }}>View all PDF tools →</Link>
                     </div>
                   </div>
                 )}
@@ -100,7 +205,7 @@ export default function HomePage() {
                           <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{tool.name}</span>
                         </Link>
                       ))}
-                      <Link href="/tools" className="text-xs hover:underline px-3 py-2 mt-1" style={{ color: 'var(--accent-sage)' }}>View all image tools →</Link>
+                      <Link href="/tools" className="text-xs hover:underline px-3 py-2 mt-1" style={{ color: 'var(--finance-blue)' }}>View all image tools →</Link>
                     </div>
                   </div>
                 )}
@@ -124,7 +229,7 @@ export default function HomePage() {
                           <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{tool.name}</span>
                         </Link>
                       ))}
-                      <Link href="/tools" className="text-xs hover:underline px-3 py-2 mt-1" style={{ color: 'var(--accent-sage)' }}>View all video tools →</Link>
+                      <Link href="/tools" className="text-xs hover:underline px-3 py-2 mt-1" style={{ color: 'var(--finance-blue)' }}>View all video tools →</Link>
                     </div>
                   </div>
                 )}
@@ -148,7 +253,7 @@ export default function HomePage() {
                           <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{tool.name}</span>
                         </Link>
                       ))}
-                      <Link href="/tools" className="text-xs hover:underline px-3 py-2 mt-1" style={{ color: 'var(--accent-sage)' }}>View all audio tools →</Link>
+                      <Link href="/tools" className="text-xs hover:underline px-3 py-2 mt-1" style={{ color: 'var(--finance-blue)' }}>View all audio tools →</Link>
                     </div>
                   </div>
                 )}
@@ -172,7 +277,7 @@ export default function HomePage() {
                           <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{tool.name}</span>
                         </Link>
                       ))}
-                      <Link href="/tools" className="text-xs hover:underline px-3 py-2 mt-1" style={{ color: 'var(--accent-sage)' }}>View all utilities →</Link>
+                      <Link href="/tools" className="text-xs hover:underline px-3 py-2 mt-1" style={{ color: 'var(--finance-blue)' }}>View all utilities →</Link>
                     </div>
                   </div>
                 )}
@@ -186,7 +291,7 @@ export default function HomePage() {
                 <Menu className="w-6 h-6" />
               </button>
               <Link href="/auth/signin" className="hidden sm:block px-5 py-2.5 top-nav-link font-semibold">Sign In</Link>
-              <Link href="/auth/signup" className="btn-neon">Start Free</Link>
+              <Link href="/auth/signup" className="btn-primary">Start Free</Link>
             </div>
           </div>
 
@@ -216,7 +321,7 @@ export default function HomePage() {
       <section className="relative overflow-hidden pt-16 pb-24">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-4xl mx-auto mb-12 fade-in">
-            <div className="inline-block mb-4 px-4 py-1.5 neu-badge-accent rounded-full text-sm font-semibold">
+            <div className="inline-block mb-4 px-4 py-1.5 badge-blue rounded-full text-sm font-semibold">
               {totalTools}+ Professional Document Tools • Free to Try
             </div>
             <h1 className="text-5xl md:text-6xl font-extrabold mb-6 leading-tight" style={{ color: 'var(--text-primary)' }}>
@@ -238,12 +343,12 @@ export default function HomePage() {
               onClick={() => fileInputRef.current?.click()}
               className={`cursor-pointer group transition-all duration-300 ${isDragging ? 'scale-[1.02]' : 'hover:scale-[1.01]'}`}
             >
-              <div className={`neu-card-lg text-center transition-all ${isDragging ? 'neu-pulse' : ''}`}>
+              <div className={`glass-card text-center transition-all ${isDragging ? 'pulse-glow' : ''}`}>
                 {/* Upload Icon */}
                 <div className={`mb-6 transition-transform duration-300 ${isDragging ? 'scale-110 -translate-y-2' : 'group-hover:scale-105'}`}>
                   <div className="relative inline-block">
-                    <div className="relative w-24 h-24 rounded-full neu-card flex items-center justify-center mx-auto">
-                      <Upload className={`w-12 h-12 transition-transform ${isDragging ? 'animate-bounce' : ''}`} style={{ color: 'var(--accent-sage)' }} />
+                    <div className="relative w-24 h-24 rounded-full glass-card flex items-center justify-center mx-auto">
+                      <Upload className={`w-12 h-12 transition-transform ${isDragging ? 'animate-bounce' : ''}`} style={{ color: 'var(--finance-blue)' }} />
                     </div>
                   </div>
                 </div>
@@ -263,14 +368,14 @@ export default function HomePage() {
                   ].map((type, i) => (
                     <div key={i} className="flex flex-col items-center">
                       <span className="text-2xl mb-1">{type.icon}</span>
-                      <span className="text-xs" style={{ color: 'var(--accent-sage)' }}>{type.label}</span>
+                      <span className="text-xs" style={{ color: 'var(--finance-blue)' }}>{type.label}</span>
                     </div>
                   ))}
                 </div>
 
                 <div className="flex items-center justify-center gap-6 text-sm" style={{ color: 'var(--text-muted)' }}>
-                  <span className="flex items-center gap-1"><Zap className="w-4 h-4" style={{ color: 'var(--accent-sage)' }} />5 free operations</span>
-                  <span className="flex items-center gap-1"><span style={{ color: 'var(--accent-sage)' }}>✓</span>10MB max per file</span>
+                  <span className="flex items-center gap-1"><Zap className="w-4 h-4" style={{ color: 'var(--finance-blue)' }} />5 free operations</span>
+                  <span className="flex items-center gap-1"><span style={{ color: 'var(--finance-blue)' }}>✓</span>10MB max per file</span>
                 </div>
               </div>
 
@@ -279,14 +384,14 @@ export default function HomePage() {
 
             {/* Uploaded Files List */}
             {uploadedFiles.length > 0 && (
-              <div className="mt-6 neu-card">
+              <div className="mt-6 glass-card">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Uploaded Files ({uploadedFiles.length})</h4>
                   <button onClick={() => { setUploadedFiles([]); setShowToolSelection(false) }} className="text-sm transition hover:underline" style={{ color: 'var(--text-muted)' }}>Clear all</button>
                 </div>
                 <div className="space-y-2">
                   {uploadedFiles.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between neu-card-sm">
+                    <div key={index} className="flex items-center justify-between glass-card p-3">
                       <div className="flex items-center gap-3">
                         {getFileIcon(file)}
                         <div>
@@ -310,20 +415,20 @@ export default function HomePage() {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {getRecommendedTools().map((tool) => (
                     <button key={tool.id} onClick={() => navigateToTool(tool.id)}
-                      className="neu-card-sm hover:neu-pulse p-4 text-left transition-all group">
+                      className="glass-card hover:pulse-glow p-4 text-left transition-all group">
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">{tool.icon}</span>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm truncate" style={{ color: 'var(--text-primary)' }}>{tool.name}</p>
                           <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{tool.description}</p>
                         </div>
-                        <ArrowRight className="w-4 h-4 transition opacity-0 group-hover:opacity-100" style={{ color: 'var(--accent-sage)' }} />
+                        <ArrowRight className="w-4 h-4 transition opacity-0 group-hover:opacity-100" style={{ color: 'var(--finance-blue)' }} />
                       </div>
                     </button>
                   ))}
                 </div>
                 <div className="text-center mt-4">
-                  <Link href="/tools" className="hover:underline text-sm" style={{ color: 'var(--accent-sage)' }}>Browse all {totalTools}+ tools →</Link>
+                  <Link href="/tools" className="hover:underline text-sm" style={{ color: 'var(--finance-blue)' }}>Browse all {totalTools}+ tools →</Link>
                 </div>
               </div>
             )}
@@ -333,7 +438,7 @@ export default function HomePage() {
           <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm" style={{ color: 'var(--text-muted)' }}>
             {['No sign-up required', 'Files auto-delete in 1 hour', '256-bit encryption'].map((text, i) => (
               <div key={i} className="flex items-center gap-2">
-                <svg className="w-5 h-5" style={{ color: 'var(--accent-sage)' }} fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-5 h-5" style={{ color: 'var(--finance-blue)' }} fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 <span className="font-medium">{text}</span>
@@ -367,7 +472,7 @@ export default function HomePage() {
               { id: 'pdf-rotate', name: 'Rotate PDF', icon: '🔄' },
             ].map((tool) => (
               <Link key={tool.id} href={user ? `/dashboard/tools/${tool.id}` : `/tools/${tool.id}`}
-                className="neu-card-sm hover:neu-pulse p-5 text-center transition-all group">
+                className="glass-card hover:pulse-glow p-5 text-center transition-all group">
                 <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">{tool.icon}</div>
                 <p className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{tool.name}</p>
               </Link>
@@ -375,7 +480,7 @@ export default function HomePage() {
           </div>
 
           <div className="text-center mt-8">
-            <Link href="/tools" className="inline-flex items-center gap-2 neu-btn-accent px-6 py-3 rounded-full font-semibold">
+            <Link href="/tools" className="inline-flex items-center gap-2 btn-primary px-6 py-3 rounded-full font-semibold">
               View All {totalTools}+ Tools
               <ArrowRight className="w-4 h-4" />
             </Link>
@@ -393,35 +498,33 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-2 gap-8">
             {TOOL_CATEGORIES.map((category) => (
-              <div key={category.id} className="neu-card">
-                <div className="flex items-center gap-4 mb-6 pb-6 neu-separator">
-                  <div className="text-5xl p-4 rounded-2xl neu-card-sm">{category.icon}</div>
+              <div key={category.id} className="glass-card">
+                <div className="flex items-center gap-4 mb-6 pb-6" style={{ borderBottom: '1px solid var(--border-default)' }}>
+                  <div className="text-5xl p-4 rounded-2xl glass-card">{category.icon}</div>
                   <div>
                     <h3 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{category.name}</h3>
-                    <p style={{ color: 'var(--text-secondary)' }}>{category.description}</p>
+                    <p style={{ color: 'var(--text-secondary)' }}>{category.count} tools available</p>
                   </div>
                 </div>
 
-                <div className="space-y-6">
-                  {category.subcategories.map((subcategory, idx) => (
-                    <div key={idx}>
-                      <h4 className="text-sm font-bold uppercase tracking-wide mb-3 flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
-                        <span className="w-2 h-2 rounded-full" style={{ background: 'var(--accent-sage)' }}></span>
-                        {subcategory.name}
-                      </h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        {subcategory.tools.map((toolId) => (
-                          <Link key={toolId} href={user ? `/dashboard/tools/${toolId}` : `/tools/${toolId}`}
-                            className="group px-4 py-2.5 neu-card-sm hover:neu-pulse rounded-lg transition-all text-sm font-medium flex items-center justify-between"
-                            style={{ color: 'var(--text-secondary)' }}>
-                            <span className="truncate">{toolId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>
-                            <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--accent-sage)' }} />
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {category.tools.slice(0, 8).map((tool) => (
+                    <Link key={tool.id} href={user ? `/dashboard/tools/${tool.id}` : `/tools/${tool.id}`}
+                      className="group px-4 py-2.5 glass-card hover:pulse-glow rounded-lg transition-all text-sm font-medium flex items-center justify-between"
+                      style={{ color: 'var(--text-secondary)' }}>
+                      <span className="truncate">{tool.name}</span>
+                      <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--finance-blue)' }} />
+                    </Link>
                   ))}
                 </div>
+
+                {category.tools.length > 8 && (
+                  <div className="mt-4 text-center">
+                    <Link href={`/tools?category=${category.id}`} className="text-sm hover:underline" style={{ color: 'var(--finance-blue)' }}>
+                      View all {category.tools.length} tools →
+                    </Link>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -445,7 +548,7 @@ export default function HomePage() {
               { icon: "📱", title: "Mobile Friendly", description: "Full functionality on desktop, tablet, and mobile" },
               { icon: "🔌", title: "API Access", description: "Integrate with your workflow via our RESTful API" }
             ].map((feature, i) => (
-              <div key={i} className="neu-card hover:neu-pulse">
+              <div key={i} className="glass-card hover:pulse-glow">
                 <div className="text-5xl mb-4">{feature.icon}</div>
                 <h3 className="text-xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>{feature.title}</h3>
                 <p style={{ color: 'var(--text-secondary)' }}>{feature.description}</p>
@@ -465,49 +568,49 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Free */}
-            <div className="neu-card">
+            <div className="glass-card">
               <h3 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Free</h3>
               <div className="mb-6"><span className="text-5xl font-extrabold text-gradient">$0</span><span style={{ color: 'var(--text-muted)' }}>/forever</span></div>
               <ul className="space-y-3 mb-8" style={{ color: 'var(--text-secondary)' }}>
                 {['5 operations/day', 'All tools included', '10MB max file size', 'Basic support'].map((item, i) => (
                   <li key={i} className="flex items-center gap-2">
-                    <svg className="w-5 h-5" style={{ color: 'var(--accent-sage)' }} fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                    <svg className="w-5 h-5" style={{ color: 'var(--finance-blue)' }} fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
                     {item}
                   </li>
                 ))}
               </ul>
-              <Link href="/auth/signup" className="block w-full py-3 neu-btn rounded-lg font-semibold text-center">Get Started</Link>
+              <Link href="/auth/signup" className="block w-full py-3 btn-secondary rounded-lg font-semibold text-center">Get Started</Link>
             </div>
 
             {/* Pro */}
-            <div className="neu-card-lg relative transform scale-105 neu-pulse" style={{ border: '2px solid var(--accent-sage)' }}>
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 neu-badge-accent px-4 py-1 rounded-full text-sm font-bold">MOST POPULAR</div>
+            <div className="glass-card-strong relative transform scale-105 pulse-glow" style={{ border: '2px solid var(--finance-blue)' }}>
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 badge-blue-solid px-4 py-1 rounded-full text-sm font-bold">MOST POPULAR</div>
               <h3 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Pro</h3>
               <div className="mb-6"><span className="text-5xl font-extrabold text-gradient">$79</span><span style={{ color: 'var(--text-secondary)' }}>/year</span></div>
               <ul className="space-y-3 mb-8" style={{ color: 'var(--text-secondary)' }}>
                 {['1000 operations/month', '500MB max file size', 'Priority processing', 'API access', 'Email support'].map((item, i) => (
                   <li key={i} className="flex items-center gap-2">
-                    <svg className="w-5 h-5" style={{ color: 'var(--accent-sage)' }} fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                    <svg className="w-5 h-5" style={{ color: 'var(--finance-blue)' }} fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
                     {item}
                   </li>
                 ))}
               </ul>
-              <Link href="/auth/signup" className="btn-neon block w-full text-center py-3">Start Free Trial</Link>
+              <Link href="/auth/signup" className="btn-primary block w-full text-center py-3">Start Free Trial</Link>
             </div>
 
             {/* Business */}
-            <div className="neu-card">
+            <div className="glass-card">
               <h3 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Business</h3>
               <div className="mb-6"><span className="text-5xl font-extrabold text-gradient">$299</span><span style={{ color: 'var(--text-muted)' }}>/year</span></div>
               <ul className="space-y-3 mb-8" style={{ color: 'var(--text-secondary)' }}>
                 {['Unlimited operations', '2GB max file size', '20 concurrent jobs', 'Custom branding', 'Priority support'].map((item, i) => (
                   <li key={i} className="flex items-center gap-2">
-                    <svg className="w-5 h-5" style={{ color: 'var(--accent-sage)' }} fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                    <svg className="w-5 h-5" style={{ color: 'var(--finance-blue)' }} fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
                     {item}
                   </li>
                 ))}
               </ul>
-              <Link href="/auth/signup" className="btn-neon block w-full text-center py-3">Contact Sales</Link>
+              <Link href="/auth/signup" className="btn-primary block w-full text-center py-3">Contact Sales</Link>
             </div>
           </div>
         </div>
@@ -518,12 +621,12 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h2 className="text-4xl md:text-5xl font-extrabold mb-6" style={{ color: 'var(--text-primary)' }}>Ready to <span className="text-gradient">Transform</span> Your Documents?</h2>
           <p className="text-xl mb-10" style={{ color: 'var(--text-secondary)' }}>Join thousands of users processing millions of documents with DocOpsCloud</p>
-          <Link href="/auth/signup" className="btn-neon inline-block px-10 py-4 text-lg">Start Free Today - No Credit Card Required</Link>
+          <Link href="/auth/signup" className="btn-primary inline-block px-10 py-4 text-lg">Start Free Today - No Credit Card Required</Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="glass-strong py-12 px-6" style={{ borderTop: '1px solid var(--shadow-dark)' }}>
+      <footer className="glass-strong py-12 px-6" style={{ borderTop: '1px solid var(--border-default)' }}>
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
@@ -557,7 +660,7 @@ export default function HomePage() {
               </ul>
             </div>
           </div>
-          <div className="pt-8 text-center text-sm" style={{ borderTop: '1px solid var(--shadow-dark)', color: 'var(--text-muted)' }}>
+          <div className="pt-8 text-center text-sm" style={{ borderTop: '1px solid var(--border-default)', color: 'var(--text-muted)' }}>
             <p>© 2025 DocOpsCloud. All rights reserved.</p>
           </div>
         </div>

@@ -1,7 +1,7 @@
 // Health Check Endpoint
 
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db/prisma'
 import { cache } from '@/lib/cache/redis-cache'
 import { performanceMonitor } from '@/lib/monitoring/performance'
 

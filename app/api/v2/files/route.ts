@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { APIv2Response } from '@/lib/api/v2/base'
 import { APIv2Middleware } from '@/lib/api/v2/middleware'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db/prisma'
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now()

@@ -7,12 +7,6 @@ import { join } from 'path'
 import { v4 as uuidv4 } from 'uuid'
 import { pdfQueue } from '@/lib/queue/client'
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-}
-
 export async function POST(req: NextRequest) {
   const startTime = Date.now()
 
